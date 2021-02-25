@@ -10,5 +10,7 @@ void setup()
 void loop()
 {
 	driver.differentialSteer(1, 0);
+	delay(1000);
+	driver.differentialSteer(1, 1);
 }
 

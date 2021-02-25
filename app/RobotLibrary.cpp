@@ -1,4 +1,5 @@
 #include "RobotLibrary.h"
+#include <exception>
 
 void RobotDriverBase::setup() 
 {
@@ -7,6 +8,7 @@ void RobotDriverBase::setup()
 
 void RobotDriverBase::differentialSteer(double speed, double rotation) 
 {
+	if (speed > 1 || speed < -1 || rotation > 1 || speed < -1) return; //throw range_error
 	if (rotation>=0)
 	{
 		md.setM1Speed(400*speed);
