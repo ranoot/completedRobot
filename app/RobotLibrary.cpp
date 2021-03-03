@@ -44,7 +44,7 @@ bool RobotColourSensor::withinRange(int16_t rMax, int16_t rMin, int16_t gMax, ui
 	return 
 		(r >= rMin && r <= rMax) && // 8 < R < 12
 		(g >= gMin && g <= gMax) && // 10 < G < 15
-		(b >= bMin && b <= bMax); //  6 < B < 9
+		(b >= bMin && b <= bMax); // 6 < B < 9
 }
 
 bool RobotColourSensor::isGreen() 

@@ -1,7 +1,12 @@
 #include "RobotLibrary.h"
 
-// RobotDriverBase driver;
+#define KP 0.1
+#define KD 5
+#define motorSpeed 0.5
+
+RobotDriverBase driver;
 Adafruit_TCS34725 tcs;
+QTRSensors qtr;
 
 void setup()
 {
@@ -13,6 +18,30 @@ void setup()
     	Serial.println("No TCS34725 found ... check your connections");
     	while (1);
   	}
+	qtr.setTypeRC(); // or setTypeAnalog()
+  	qtr.setSensorPins((const uint8_t[]){A0, A1, A2}, 3);
+
+	for (uint8_t i = 0; i < 250; i++)
+	{
+		qtr.calibrate();
+		delay(20);
+	}
+
+}
+
+double PID()
+{
+	static uint16_t lastError = 0;
+	uint16_t sensors[7];
+
+	int16_t position = qtr.readLineBlack(sensors);
+
+	int16_t error = position - 4000;
+
+	int16_t rotation = KP * error + KD * (error - lastError);
+	lastError = error;
+
+	driver.differentialSteer(motorSpeed, rotation);
 }
 
 void loop(void) {
