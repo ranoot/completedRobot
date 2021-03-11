@@ -1,14 +1,18 @@
-#include "RobotLibrary.h"
+// #include <ArduinoSTL.h>
+// #include <system_configuration.h>
+// #include <unwind-cxx.h>
 
-#define KP 0.1
+#include "RobotLibrary.h"
+// #include <algorithm>
+
+#define KP 0.0002
 #define KD 5
 #define motorSpeed 0.005
 #define TCAADDR 0x70
 #define M1 100
 #define M2 100
 
-Adafruit_TCS34725 tcs1;
-Adafruit_TCS34725 tcs2;
+Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_700MS, TCS34725_GAIN_4X);
 
 QTRSensors qtr;
 DualVNH5019MotorShield md;
@@ -33,12 +37,12 @@ void setup()
     // 	while (1);
   	// }
 	qtr.setTypeAnalog(); // or setTypeAnalog()
-  	qtr.setSensorPins((const uint8_t[]){A8, A9, A10, A11, (uint8_t)'\036', (uint8_t)'\037', (uint8_t)'\038'}, 7);
+  	qtr.setSensorPins((const uint8_t[]){A7, A8, A9, A10, A11, A12, A13}, 7);
 
 	for (uint8_t i = 0; i < 250; i++)
 	{
 		qtr.calibrate();
-		delay(20);
+		delay(10);
 	}
 
 	// tcaselect(0);
@@ -47,21 +51,75 @@ void setup()
 	// tcs2.begin();
 }
 
+// struct HSB {
+// 	int hue;
+// 	int saturation;
+// 	int brightness;
+// };
+
+// HSB RGBtoHSB(int red, int green, int blue)
+// {
+// 	double min, max, chroma;
+// 	HSB out;
+
+// 	min = red < green ? red : green;
+// 	min = min < blue ? min : blue;
+
+// 	max = red > green ? red : green;
+// 	max = max > blue ? max : blue;
+
+// 	chroma = max - min;
+
+// 	out.brightness = max;
+// 	out.saturation = out.brightness == 0 ? 0 : chroma/max;
+
+// 	if (chroma == 0) {
+// 		out.hue = 0;
+// 	} else if (max == red) {
+// 		out.hue = 60 * ((green - blue)/chroma);
+// 	} else if (max == green) {
+// 		out.hue = 60 * (2 + (blue-red)/chroma);
+// 	} else if (max == blue) {
+// 		out.hue = 60 * (4 + (red - green)/chroma);
+// 	}
+
+// 	return out;
+// }
+
 double PID()
 {
 	static uint16_t lastError = 0;
 	uint16_t sensors[7];
 
-	int16_t position = qtr.readLineBlack(sensors);
+	qtr.read(sensors);
 
-	int16_t error = position - 3000;
+	double error{0};
+	
+	for (int i = 0, sensorID = -3; i < 7; i++, sensorID++)
+	{
+		double sensorReading = (double)sensors[i];
+		// Serial.print(sensorID);
+		// Serial.print(": ");
+		// Serial.print(sensorReading);
+		// Serial.print(" ");
+		error += sensorID * sensorReading;
+	}
+	// uint16_t* maximumValue = std::max_element(sensors, sensors + 6);
+	// if (maximumValue == (sensors + 6)) {
+	// 	error = 27000;
+	// } else if (maximumValue == sensors) {
+	// 	error = -27000;
+	// }
 
-	int16_t rotation = KP * error + KD * (error - lastError);
-	lastError = error;
+	double rotation{error * KP};
+	// Serial.println(error);
+	// Serial.println(rotation);
+	
+	differentialSteer(0.2, rotation);
 
-	int16_t m1Speed = M1 + motorSpeed;
-  	int16_t m2Speed = M2 - motorSpeed;
-	md.setSpeeds(m1Speed, -m2Speed);
+	// int16_t m1Speed = M1 + rotation;
+  	// int16_t m2Speed = M2 - rotation;
+	// md.setSpeeds(m1Speed, -m2Speed);
 }
 
 void differentialSteer(double speed, double rotation)
@@ -89,32 +147,41 @@ bool withinRange(Adafruit_TCS34725 tcs, int16_t rMax, int16_t rMin, int16_t gMax
 		(b >= bMin && b <= bMax); // 6 < B < 9
 }
 
-bool isGreen(Adafruit_TCS34725 tcs) { return withinRange(tcs, 12, 8, 15, 10, 9, 6); }
+// void isGreen() 
+// { 
+// 	uint16_t r, g, b, c;
+// 	tcs.getRawData(&r, &g, &b, &c);
+	
+// 	HSB HSBvalue = RGBtoHSB(r, g, b);
+// 	Serial.print("H: "); Serial.println(HSBvalue.hue);
+// 	Serial.print("S: "); Serial.println(HSBvalue.saturation);
+// 	Serial.print("B: "); Serial.println(HSBvalue.brightness);
+// }
 
-void checkGreen()
-{
-	#define angularMotorSpeed 0.5
-	tcaselect(0);
-	bool leftColourSensor = isGreen(tcs1);
+// void checkGreen()
+// {
+// 	#define angularMotorSpeed 0.5
+// 	tcaselect(0);
+// 	bool leftColourSensor = isGreen(tcs1);
 
-	tcaselect(1);
-	bool rightColourSensor = isGreen(tcs2);
+// 	tcaselect(1);
+// 	bool rightColourSensor = isGreen(tcs2);
 
-	if (!leftColourSensor && !rightColourSensor)return;
-	if (!leftColourSensor) {
-		differentialSteer(motorSpeed, 0.5);
-		delay(1500);
-		differentialSteer(motorSpeed, 0);
-	} else if (!rightColourSensor) {
-		differentialSteer(motorSpeed, -0.5);
-		delay(1500);
-		differentialSteer(motorSpeed, 0);
-	} else {
-		differentialSteer(motorSpeed, 1);
-		delay(3000);
-		differentialSteer(motorSpeed, 0);
-	}
-}
+// 	if (!leftColourSensor && !rightColourSensor)return;
+// 	if (!leftColourSensor) {
+// 		differentialSteer(motorSpeed, 0.5);
+// 		delay(1500);
+// 		differentialSteer(motorSpeed, 0);
+// 	} else if (!rightColourSensor) {
+// 		differentialSteer(motorSpeed, -0.5);
+// 		delay(1500);
+// 		differentialSteer(motorSpeed, 0);
+// 	} else {
+// 		differentialSteer(motorSpeed, 1);
+// 		delay(3000);
+// 		differentialSteer(motorSpeed, 0);
+// 	}
+// }
 
 void loop() {
 	// uint16_t r, g, b, c, colorTemp, lux;
@@ -131,6 +198,13 @@ void loop() {
 	// Serial.print("B: "); Serial.print(b, DEC); Serial.print(" ");
 	// Serial.print("C: "); Serial.print(c, DEC); Serial.print(" ");
 	// Serial.println(" ");
+	// differentialSteer(0.2, 0.5);
+	// delay(1000);
+	// differentialSteer(0.2, -0.5);
+	// delay(1000);
+	// differentialSteer(0.2, 0);
+	// delay(1000);
+
 	PID();
 }
 
