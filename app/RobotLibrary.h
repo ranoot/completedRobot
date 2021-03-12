@@ -3,7 +3,13 @@
 #include <QTRSensors.h>
 #include "Wire.h"
 
-class RobotDriverBase {
+struct HSB {
+	int hue;
+	int saturation;
+	int brightness;
+};
+
+class RobotDriver {
     public:
         void differentialSteer(double speed, double rotation);
         void init();
@@ -17,9 +23,8 @@ class RobotColourSensor {
         RobotColourSensor();
         void init();
         bool isGreen();
-        bool isOrange();
-        bool isWhite();
+        HSB RGBtoHSB(int red, int green, int blue);
     private:
-        Adafruit_TCS34725 tcs;
-        bool withinRange(int16_t rMax, int16_t rMin, int16_t gMax, uint16_t gMin, uint16_t bMax, uint16_t bMin);
+        Adafruit_TCS34725 tcs1;
+        Adafruit_TCS34725 tcs2;
 };

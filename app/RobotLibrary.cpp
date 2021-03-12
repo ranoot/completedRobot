@@ -1,13 +1,22 @@
 #include "RobotLibrary.h"
+#define TCAADDR 0x70
 
-void RobotDriverBase::init() 
+
+void tcaselect(uint8_t i) {
+	if (i > 7) return;
+	
+	Wire.beginTransmission(TCAADDR);
+	Wire.write(1 << i);
+	Wire.endTransmission();  
+}
+
+void RobotDriver::init() 
 {
     md.init();
 }
 
-void RobotDriverBase::differentialSteer(double speed, double rotation) 
+void RobotDriver::differentialSteer(double speed, double rotation) 
 {
-	if (speed > 1 || speed < -1 || rotation > 1 || rotation < -1) return; //throw range_error
 	if (rotation>=0)
 	{
 		md.setM1Speed(400*speed);
@@ -21,7 +30,7 @@ void RobotDriverBase::differentialSteer(double speed, double rotation)
     stopIfFault();
 }
 
-void RobotDriverBase::stopIfFault()
+void RobotDriver::stopIfFault()
 {
 	if (md.getM1Fault())
 	{
@@ -35,24 +44,52 @@ void RobotDriverBase::stopIfFault()
 	}
 }
 
-
-bool RobotColourSensor::withinRange(int16_t rMax, int16_t rMin, int16_t gMax, uint16_t gMin, uint16_t bMax, uint16_t bMin)
+void RobotColourSensor::init()
 {
-	uint16_t r, g, b, c;
+	tcaselect(0);
+	Serial.begin(9600);
+	if (tcs1.begin()) {
+    	Serial.println("Found sensor");
+  	} else {
+    	Serial.println("TCS34725 (1) not found");
+    	while (1);
+  	}
 
-	tcs.getRawData(&r, &g, &b, &c);
-	return 
-		(r >= rMin && r <= rMax) && // 8 < R < 12
-		(g >= gMin && g <= gMax) && // 10 < G < 15
-		(b >= bMin && b <= bMax); // 6 < B < 9
+	tcaselect(1);
+	Serial.begin(9600);
+	if (tcs2.begin()) {
+    	Serial.println("Found sensor");
+  	} else {
+    	Serial.println("TCS34725 (2) not found");
+    	while (1);
+  	}
 }
 
-bool RobotColourSensor::isGreen() 
+HSB RobotColourSensor::RGBtoHSB(int red, int green, int blue)
 {
-	return withinRange(12, 8, 15, 10, 9, 6);
-}
+	double min, max, chroma;
+	HSB out;
 
-bool RobotColourSensor::isOrange()
-{
-	return true;
+	min = red < green ? red : green;
+	min = min < blue ? min : blue;
+
+	max = red > green ? red : green;
+	max = max > blue ? max : blue;
+
+	chroma = max - min;
+
+	out.brightness = max;
+	out.saturation = out.brightness == 0 ? 0 : chroma/max;
+
+	if (chroma == 0) {
+		out.hue = 0;
+	} else if (max == red) {
+		out.hue = 60 * ((green - blue)/chroma);
+	} else if (max == green) {
+		out.hue = 60 * (2 + (blue-red)/chroma);
+	} else if (max == blue) {
+		out.hue = 60 * (4 + (red - green)/chroma);
+	}
+
+	return out;
 }
