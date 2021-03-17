@@ -5,40 +5,32 @@
 #include "RobotLibrary.h"
 // #include <algorithm>
 
-#define KP 0.0003
-#define KD 0.00001
+#define KP 0.0004
+#define KD 0.000017
 #define motorSpeed 0.005
 #define M1 100
 #define M2 100
 
-Adafruit_TCS34725 tcs = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_700MS, TCS34725_GAIN_4X);
-
-QTRSensors qtr;
-DualVNH5019MotorShield md;
+RobotDriver driver;
+RobotColourSensor colourSensor;
+RobotLightSensor lightSensor;
  
 void setup()
 {
 	Serial.begin(9600);
-	md.init();
-	
-	qtr.setTypeAnalog(); // or setTypeAnalog()
-  	qtr.setSensorPins((const uint8_t[]){A7, A8, A9, A10, A11, A12, A13}, 7);
+	driver.init();
+	colourSensor.init();
+	lightSensor.init();
 
-	for (uint8_t i = 0; i < 150; i++)
-	{
-		qtr.calibrate();
-		delay(10);
-		Serial.println(i);
-	}
 }
 
 double PID()
 {
-	#define maxError 2785
-	static uint16_t lastError = 0;
+	const double maxError{2785};
+	static uint16_t lastError{0};
 	uint16_t sensors[7];
 
-	qtr.read(sensors);
+	lightSensor.qtrRef().read(sensors);
 
 	double error{0};
 	uint16_t minValue{sensors[0]};
@@ -73,89 +65,57 @@ double PID()
 	lastError = error;
 	double rotation{(error * KP) + ((error - lastError) * KD)};
 	
-	differentialSteer(0.19, rotation);
+	driver.differentialSteer(0.18, rotation);
 
-	// Serial.print(error);
-	// Serial.print(" -> ");
-	// Serial.println(rotation);
+	Serial.print(error);
+	Serial.print(" -> ");
+	Serial.println(rotation);
 	// int16_t m1Speed = M1 + rotation;
   	// int16_t m2Speed = M2 - rotation;
 	// md.setSpeeds(m1Speed, -m2Speed);
 }
 
-void differentialSteer(double speed, double rotation)
-{
-	// positive rotation is clockwise
-	if (rotation>=0)
-	{
-		md.setM1Speed(400*speed);
-		md.setM2Speed(-(400*(speed-2*speed*fabs(rotation)))); // negative to ensure that
-	}
-	if (rotation<=0)
-	{
-		md.setM1Speed(400*(speed-2*speed*fabs(rotation)));
-		md.setM2Speed(-(400*speed));
-	}
-}
-
 // void test() 
 // { 
-// 	uint16_t r, g, b, c;
-// 	tcs.getRawData(&r, &g, &b, &c);
+// 	float r, g, b;
+// 	tcs.getRGB(&r, &g, &b);
 	
-// 	HSB HSBvalue = RGBtoHSB(r, g, b);
+// 	auto HSBvalue = RGBtoHSB(r, g, b);
+// 	// Serial.print("R: "); Serial.println(r);
+// 	// Serial.print("G: "); Serial.println(g);
+// 	// Serial.print("B: "); Serial.println(b);
+
 // 	Serial.print("H: "); Serial.println(HSBvalue.hue);
 // 	Serial.print("S: "); Serial.println(HSBvalue.saturation);
 // 	Serial.print("B: "); Serial.println(HSBvalue.brightness);
 // }
 
-// void checkGreen()
-// {
-// 	#define angularMotorSpeed 0.5
-// 	tcaselect(0);
-// 	bool leftColourSensor = isGreen(tcs1);
+void checkGreen()
+{
+	#define angularMotorSpeed 0.2
+	bool leftColourSensor = colourSensor.isGreen(1);
+	bool rightColourSensor = colourSensor.isGreen(0);
 
-// 	tcaselect(1);
-// 	bool rightColourSensor = isGreen(tcs2);
-
-// 	if (!leftColourSensor && !rightColourSensor)return;
-// 	if (!leftColourSensor) {
-// 		differentialSteer(motorSpeed, 0.5);
-// 		delay(1500);
-// 		differentialSteer(motorSpeed, 0);
-// 	} else if (!rightColourSensor) {
-// 		differentialSteer(motorSpeed, -0.5);
-// 		delay(1500);
-// 		differentialSteer(motorSpeed, 0);
-// 	} else {
-// 		differentialSteer(motorSpeed, 1);
-// 		delay(3000);
-// 		differentialSteer(motorSpeed, 0);
-// 	}
-// }
+	if (!leftColourSensor && !rightColourSensor)return;
+	Serial.println("TURNING");
+	if (!leftColourSensor) {
+		driver.differentialSteer(angularMotorSpeed, 0.5);
+		delay(1500);
+		// driver.differentialSteer(angularMotorSpeed, 0);
+	} else if (!rightColourSensor) {
+		driver.differentialSteer(angularMotorSpeed, -0.5);
+		delay(1500);
+		// driver.differentialSteer(angularMotorSpeed, 0);
+	} else {
+		driver.differentialSteer(angularMotorSpeed, 1);
+		delay(3000);
+		// driver.differentialSteer(angularMotorSpeed, 0);
+	}
+}
 
 void loop() {
-	// uint16_t r, g, b, c, colorTemp, lux;
-
-	// tcs.getRawData(&r, &g, &b, &c);
-	// // colorTemp = tcs.calculateColorTemperature(r, g, b);
-	// colorTemp = tcs.calculateColorTemperature_dn40(r, g, b, c);
-	// lux = tcs.calculateLux(r, g, b);
-
-	// Serial.print("Color Temp: "); Serial.print(colorTemp, DEC); Serial.print(" K - ");
-	// Serial.print("Lux: "); Serial.print(lux, DEC); Serial.print(" - ");
-	// Serial.print("R: "); Serial.print(r, DEC); Serial.print(" ");
-	// Serial.print("G: "); Serial.print(g, DEC); Serial.print(" ");
-	// Serial.print("B: "); Serial.print(b, DEC); Serial.print(" ");
-	// Serial.print("C: "); Serial.print(c, DEC); Serial.print(" ");
-	// Serial.println(" ");
-	// differentialSteer(0.2, 0.5);
-	// delay(1000);
-	// differentialSteer(0.2, -0.5);
-	// delay(1000);
-	// differentialSteer(0.2, 0);
-	// delay(1000);
-
+	tcaselect(0);
+	
 	PID();
 }
 

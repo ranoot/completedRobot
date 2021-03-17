@@ -1,7 +1,6 @@
 #include "RobotLibrary.h"
 #define TCAADDR 0x70
 
-
 void tcaselect(uint8_t i) {
 	if (i > 7) return;
 	
@@ -10,63 +9,28 @@ void tcaselect(uint8_t i) {
 	Wire.endTransmission();  
 }
 
-void RobotDriver::init() 
-{
-    md.init();
-}
-
-void RobotDriver::differentialSteer(double speed, double rotation) 
-{
-	if (rotation>=0)
-	{
-		md.setM1Speed(400*speed);
-		md.setM2Speed(400*(speed-2*speed*fabs(rotation)));
-	}
-	if (rotation<=0)
-	{
-		md.setM1Speed(400*(speed-2*speed*fabs(rotation)));
-		md.setM2Speed(400*speed);
-	}
-    stopIfFault();
-}
-
-void RobotDriver::stopIfFault()
-{
-	if (md.getM1Fault())
-	{
-		Serial.println("M1 fault");
-		while(1);
-	}
-	if (md.getM2Fault())
-	{
-		Serial.println("M2 fault");
-		while(1);
-	}
-}
-
 void RobotColourSensor::init()
 {
 	tcaselect(0);
-	Serial.begin(9600);
-	if (tcs1.begin()) {
+	if (tcs.begin()) {
     	Serial.println("Found sensor");
   	} else {
     	Serial.println("TCS34725 (1) not found");
-    	while (1);
+    	// while (1);
   	}
 
 	tcaselect(1);
-	Serial.begin(9600);
-	if (tcs2.begin()) {
+	if (tcs.begin()) {
     	Serial.println("Found sensor");
   	} else {
     	Serial.println("TCS34725 (2) not found");
-    	while (1);
+    	// while (1);
   	}
 }
 
 HSB RobotColourSensor::RGBtoHSB(int red, int green, int blue)
 {
+	red /= 255, green /= 255, blue /= 255;
 	double min, max, chroma;
 	HSB out;
 
@@ -92,4 +56,21 @@ HSB RobotColourSensor::RGBtoHSB(int red, int green, int blue)
 	}
 
 	return out;
+}
+
+bool RobotColourSensor::isGreen(uint8_t sensorAddr)
+{
+	float r, g, b;
+	tcaselect(sensorAddr);
+	tcs.getRGB(&r, &g, &b);
+
+	auto HSBvalue = RGBtoHSB(r, g, b);
+
+	if (HSBvalue.hue < 90 || HSBvalue.hue > 150) return false;
+	if (HSBvalue.brightness < 0.3 || HSBvalue.brightness > 0.42) return false;
+	if (HSBvalue.saturation < 0.3 || HSBvalue.saturation > 0.42) return false;
+
+	tcaselect(0);
+
+	return true;
 }

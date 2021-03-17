@@ -3,10 +3,12 @@
 #include <QTRSensors.h>
 #include "Wire.h"
 
+void tcaselect(uint8_t i);
+
 struct HSB {
-	int hue;
-	int saturation;
-	int brightness;
+	double hue;
+	double saturation;
+	double brightness;
 };
 
 class RobotDriver {
@@ -20,11 +22,17 @@ class RobotDriver {
 
 class RobotColourSensor {
     public:
-        RobotColourSensor();
         void init();
-        bool isGreen();
+        bool isGreen(uint8_t sensorAddr);
         HSB RGBtoHSB(int red, int green, int blue);
     private:
-        Adafruit_TCS34725 tcs1;
-        Adafruit_TCS34725 tcs2;
+        Adafruit_TCS34725 tcs;
+};
+
+class RobotLightSensor {
+    public:
+        void init();
+        QTRSensors& qtrRef();
+    private:
+        QTRSensors qtr;
 };
