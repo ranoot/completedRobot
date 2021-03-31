@@ -1,3 +1,4 @@
+
 #include "RobotLibrary.h"
 
 void RobotDriver::init() 
@@ -7,7 +8,7 @@ void RobotDriver::init()
 
 void RobotDriver::differentialSteer(double speed, double rotation) 
 {
-    // positive rotation is clockwise
+  // positive rotation is clockwise
 	if (rotation>=0)
 	{
 		md.setM1Speed(400*speed);
@@ -18,7 +19,7 @@ void RobotDriver::differentialSteer(double speed, double rotation)
 		md.setM1Speed(400*(speed-2*speed*fabs(rotation)));
 		md.setM2Speed(-(400*speed));
 	}
-    stopIfFault();
+  stopIfFault();
 }
 
 void RobotDriver::stopIfFault()
@@ -33,4 +34,9 @@ void RobotDriver::stopIfFault()
 		Serial.println("M2 fault");
 		while(1);
 	}
+}
+
+DualVNH5019MotorShield& RobotDriver::get_md()
+{
+  return md;
 }

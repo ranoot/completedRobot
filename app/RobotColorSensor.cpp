@@ -13,22 +13,22 @@ void RobotColourSensor::init()
 {
 	tcaselect(0);
 	if (tcs.begin()) {
-    	Serial.println("Found sensor");
-  	} else {
-    	Serial.println("TCS34725 (1) not found");
-    	// while (1);
-  	}
+  	Serial.println("Found sensor");
+	} else {
+  	Serial.println("TCS34725 (1) not found");
+  	// while (1);
+	}
 
 	tcaselect(1);
 	if (tcs.begin()) {
-    	Serial.println("Found sensor");
-  	} else {
-    	Serial.println("TCS34725 (2) not found");
-    	// while (1);
-  	}
+  	Serial.println("Found sensor");
+	} else {
+  	Serial.println("TCS34725 (2) not found");
+  	// while (1);
+	}
 }
 
-HSB RobotColourSensor::RGBtoHSB(int red, int green, int blue)
+HSB RobotColourSensor::RGBtoHSB(double red, double green, double blue)
 {
 	red /= 255, green /= 255, blue /= 255;
 	double min, max, chroma;
@@ -60,15 +60,19 @@ HSB RobotColourSensor::RGBtoHSB(int red, int green, int blue)
 
 bool RobotColourSensor::isGreen(uint8_t sensorAddr)
 {
+	if (sensorAddr > 1) {
+		Serial.println("Colour sensor selected out of range");
+		while(1);
+	};
 	float r, g, b;
 	tcaselect(sensorAddr);
 	tcs.getRGB(&r, &g, &b);
-
+  
 	auto HSBvalue = RGBtoHSB(r, g, b);
 
-	if (HSBvalue.hue < 90 || HSBvalue.hue > 150) return false;
-	if (HSBvalue.brightness < 0.3 || HSBvalue.brightness > 0.42) return false;
-	if (HSBvalue.saturation < 0.3 || HSBvalue.saturation > 0.42) return false;
+	if (HSBvalue.hue < 90 || HSBvalue.hue > 150) return false; // return false if out of bounds
+  if (HSBvalue.saturation < 0.23 || HSBvalue.saturation > 0.42) return false;
+	if (HSBvalue.brightness < 0.23 || HSBvalue.brightness > 0.40) return false;
 
 	tcaselect(0);
 
