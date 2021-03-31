@@ -5,8 +5,8 @@
 #include "RobotLibrary.h"
 // #include <algorithm>
 
-#define KP 0.140
-#define KD 0.0 
+#define KP 0.0004 //0.0004
+#define KD 0.000001
 #define motorSpeed 100
 #define M1 100
 #define M2 100
@@ -28,7 +28,7 @@ void setup()
 
 double PID()
 {
-	const double maxError = 2785;
+	double maxError = 0;
 	static uint16_t lastError = 0;
 	uint16_t sensors[7];
 
@@ -45,18 +45,18 @@ double PID()
 //		Serial.print(" ");
 		error += sensorID * sensorReading;
 	}
+  if (error > maxError) maxError = error;
 	for (int j = 1; j <= 6; j++) {
 		// Serial.println(minValue);
 		minValue = (sensors[j] > minValue) ? sensors[j] : minValue;
 	}
 	if (sensors[0] == minValue) {
 		error = -maxError;
-		// Serial.println("minleft");
+		Serial.println("minleft");
 	} else if (sensors[6] == minValue) {
 		error = maxError;
-		// Serial.println("minright");
+		Serial.println("minright");
 	}
-
 	// uint16_t* maximumValue = std::max_element(sensors, sensors + 6);
 	// if (maximumValue == (sensors + 6)) {
 	// 	error = 27000;
@@ -64,17 +64,19 @@ double PID()
 	// 	error = -27000;
 	// }
 	// double D = error - lastError;
-	lastError = error;
 	double rotation{(error * KP) + ((error - lastError) * KD)};
 	
-//	driver.differentialSteer(0.3, rotation);
+	driver.differentialSteer(1, rotation);
+ 
+  lastError = error;
 
-//	Serial.print(error);
-//	Serial.print(" -> ");
-//	Serial.println(rotation);
-	double m1Speed = rotation > 0 ? motorSpeed : motorSpeed + rotation;
-  double m2Speed = rotation > 0 ? motorSpeed - rotation : motorSpeed;
-	driver.get_md().setSpeeds(m1Speed, -m2Speed);
+	Serial.println(error);
+	Serial.print("-->");
+	Serial.println(rotation);
+//	double m1Speed = rotation > 0 ? motorSpeed : motorSpeed + rotation;
+//  double m2Speed = rotation > 0 ? motorSpeed - rotation : motorSpeed;
+//	driver.get_md().setSpeeds(m1Speed, -m2Speed);
+//  Serial.print(m1Speed); Serial.print(" | "); Serial.println(m2Speed); 
 }
 
 //void test() 
