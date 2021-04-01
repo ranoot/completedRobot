@@ -5,9 +5,9 @@
 #include "RobotLibrary.h"
 // #include <algorithm>
 
-#define KP 0.0004 //0.0004
-#define KD 0.000001
-#define motorSpeed 100
+#define KP 0.0005 //0.0006 with speed 0.3
+#define KD 0.0000
+#define motorSpeed 0.3
 #define M1 100
 #define M2 100
 #define IMU_SERIAL Serial2
@@ -15,6 +15,7 @@
 RobotDriver driver;
 RobotColourSensor colourSensor;
 RobotLightSensor lightSensor;
+IMU IMU;
  
 void setup()
 {
@@ -28,7 +29,7 @@ void setup()
 
 double PID()
 {
-	double maxError = 0;
+	static double maxError = 0;
 	static uint16_t lastError = 0;
 	uint16_t sensors[7];
 
@@ -66,12 +67,12 @@ double PID()
 	// double D = error - lastError;
 	double rotation{(error * KP) + ((error - lastError) * KD)};
 	
-	driver.differentialSteer(1, rotation);
+	driver.differentialSteer(0.3, rotation);
  
   lastError = error;
 
-	Serial.println(error);
-	Serial.print("-->");
+	Serial.print(error);
+	Serial.print("->");
 	Serial.println(rotation);
 //	double m1Speed = rotation > 0 ? motorSpeed : motorSpeed + rotation;
 //  double m2Speed = rotation > 0 ? motorSpeed - rotation : motorSpeed;
@@ -94,34 +95,39 @@ double PID()
 // 	Serial.print("B: "); Serial.println(HSBvalue.brightness);
 //}
 
+void turn(double angle)
+{
+  double initialAngle = IMU.read();
+  Serial.print("Initial Angle: "); Serial.println(initialAngle);
+  double difference = 0;
+  while (difference < fabs(angle)) {
+    driver.differentialSteer(motorSpeed, angle/180);
+    difference = fabs(IMU.read() - initialAngle);
+    Serial.print("Current: "); Serial.println(IMU.read());
+    
+  }
+  driver.differentialSteer(0.5, 0);
+}
+
 void checkGreen()
 {
-	#define angularMotorSpeed 0.2
 	bool leftColourSensor = colourSensor.isGreen(1);
 	bool rightColourSensor = colourSensor.isGreen(0);
 
-	if (!leftColourSensor && !rightColourSensor){
-  Serial.println("TURNING");
-		return;
-	}
+	if (!leftColourSensor && !rightColourSensor) return;
 	if (!leftColourSensor) {
-		driver.differentialSteer(angularMotorSpeed, 0.5);
-		delay(1500);
-    Serial.println("1");
-		// driver.differentialSteer(angularMotorSpeed, 0);
+		turn(90);
+   Serial.println("right greee");
 	} else if (!rightColourSensor) {
-		driver.differentialSteer(angularMotorSpeed, -0.5);
-		delay(1500);
-      Serial.println("2");
-		// driver.differentialSteer(angularMotorSpeed, 0);
+		turn(-90);
+    Serial.println("left greee");
 	} else {
-		driver.differentialSteer(angularMotorSpeed, 1);
-		delay(3000);
-      Serial.println("U");
-		// driver.differentialSteer(angularMotorSpeed, 0);
+    turn(180);
+    Serial.println("both greee");
 	}
 }
 
 void loop() {
   PID();
+  checkGreen();
 }

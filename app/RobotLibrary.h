@@ -45,6 +45,7 @@ class RobotColourSensor {
 
 class IMU {
   public:
+    void init();
     double read();
 };
 #endif

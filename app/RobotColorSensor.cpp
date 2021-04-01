@@ -11,6 +11,8 @@ void tcaselect(uint8_t i) {
 
 void RobotColourSensor::init()
 {
+  // TCS (1) is on the starboard side
+  // TCS (2) is on the port side
 	tcaselect(0);
 	if (tcs.begin()) {
   	Serial.println("Found sensor");
