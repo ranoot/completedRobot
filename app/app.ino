@@ -5,9 +5,9 @@
 #include "RobotLibrary.h"
 // #include <algorithm>
 
-#define KP 0.0005 //0.0006 with speed 0.3
-#define KD 0.0000
-#define motorSpeed 0.3
+#define KP 0.0008 //0.0008 with speed 0.25
+#define KD 0.019 //0.05, 0.019
+#define motorSpeed 0.25 //0.23
 #define M1 100
 #define M2 100
 #define IMU_SERIAL Serial2
@@ -23,7 +23,7 @@ void setup()
   IMU_SERIAL.begin(115200);
 	driver.init();
 	colourSensor.init();
-	lightSensor.init();
+	//lightSensor.init();
 
 }
 
@@ -53,10 +53,10 @@ double PID()
 	}
 	if (sensors[0] == minValue) {
 		error = -maxError;
-		Serial.println("minleft");
+		//Serial.println("minleft");
 	} else if (sensors[6] == minValue) {
 		error = maxError;
-		Serial.println("minright");
+		//Serial.println("minright");
 	}
 	// uint16_t* maximumValue = std::max_element(sensors, sensors + 6);
 	// if (maximumValue == (sensors + 6)) {
@@ -67,12 +67,15 @@ double PID()
 	// double D = error - lastError;
 	double rotation{(error * KP) + ((error - lastError) * KD)};
 	
-	driver.differentialSteer(0.3, rotation);
+	if (rotation > 1) rotation = 1;
+  if (rotation < -1) rotation = -1; 
+	
+	driver.differentialSteer(motorSpeed, rotation);
  
   lastError = error;
 
-	Serial.print(error);
-	Serial.print("->");
+//	Serial.print(error);
+//	Serial.print("->");
 	Serial.println(rotation);
 //	double m1Speed = rotation > 0 ? motorSpeed : motorSpeed + rotation;
 //  double m2Speed = rotation > 0 ? motorSpeed - rotation : motorSpeed;
@@ -102,11 +105,11 @@ void turn(double angle)
   double difference = 0;
   while (difference < fabs(angle)) {
     driver.differentialSteer(motorSpeed, angle/180);
-    difference = fabs(IMU.read() - initialAngle);
-    Serial.print("Current: "); Serial.println(IMU.read());
-    
+    double reading = IMU.read();
+    difference = fabs(reading - initialAngle);
+    Serial.print("Current: "); Serial.println(reading);
   }
-  driver.differentialSteer(0.5, 0);
+  driver.differentialSteer(0, 0);
 }
 
 void checkGreen()
@@ -116,18 +119,17 @@ void checkGreen()
 
 	if (!leftColourSensor && !rightColourSensor) return;
 	if (!leftColourSensor) {
-		turn(90);
-   Serial.println("right greee");
+	  turn(90);
+    Serial.println("Turn right");
 	} else if (!rightColourSensor) {
 		turn(-90);
-    Serial.println("left greee");
+    Serial.println("Turn left");
 	} else {
     turn(180);
-    Serial.println("both greee");
+    Serial.println("180 turn");
 	}
 }
 
 void loop() {
-  PID();
-  checkGreen();
+  Serial.println(IMU.read());
 }

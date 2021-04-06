@@ -25,7 +25,6 @@ double IMU::read()
     }
     if (IMU_SERIAL.available()) {
       data = IMU_SERIAL.read();
-      Serial.println(data);
       if (data <= 180) {
           if (sign) angle = data; // sign = 1 => angle is positive
           else angle = -data;

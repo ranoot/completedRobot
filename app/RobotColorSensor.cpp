@@ -72,9 +72,13 @@ bool RobotColourSensor::isGreen(uint8_t sensorAddr)
   
 	auto HSBvalue = RGBtoHSB(r, g, b);
 
+//  Serial.print("H:"); Serial.print(HSBvalue.hue); 
+//  Serial.print(", S: "); Serial.print(HSBvalue.saturation);
+//  Serial.print(", B:"); Serial.println(HSBvalue.brightness);
+
 	if (HSBvalue.hue < 90 || HSBvalue.hue > 150) return false; // return false if out of bounds
-  if (HSBvalue.saturation < 0.23 || HSBvalue.saturation > 0.42) return false;
-	if (HSBvalue.brightness < 0.23 || HSBvalue.brightness > 0.40) return false;
+  if (HSBvalue.saturation < 0.09 || HSBvalue.saturation > 0.42) return false;
+	if (HSBvalue.brightness < 0.23 || HSBvalue.brightness > 0.42) return false;
 
 	tcaselect(0);
 
