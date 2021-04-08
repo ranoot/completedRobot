@@ -84,3 +84,18 @@ bool RobotColourSensor::isGreen(uint8_t sensorAddr)
 
 	return true;
 }
+
+//void test() 
+//{ 
+//   float r, g, b;
+//  tcs.getRGB(&r, &g, &b);
+//  
+//  auto HSBvalue = RGBtoHSB(r, g, b);
+//  Serial.print("R: "); Serial.println(r);
+//  Serial.print("G: "); Serial.println(g);
+//  Serial.print("B: "); Serial.println(b);
+//
+//  Serial.print("H: "); Serial.println(HSBvalue.hue);
+//  Serial.print("S: "); Serial.println(HSBvalue.saturation);
+//  Serial.print("B: "); Serial.println(HSBvalue.brightness);
+//}

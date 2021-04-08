@@ -1,21 +1,10 @@
-// #include <ArduinoSTL.h>
-// #include <system_configuration.h>
-// #include <unwind-cxx.h>
-
 #include "RobotLibrary.h"
 // #include <algorithm>
-
-#define KP 0.0008 //0.0008 with speed 0.25
-#define KD 0.019 //0.05, 0.019
-#define motorSpeed 0.25 //0.23
-#define M1 100
-#define M2 100
-#define IMU_SERIAL Serial2
 
 RobotDriver driver;
 RobotColourSensor colourSensor;
 RobotLightSensor lightSensor;
-IMU IMU;
+Gyroscope gyro;
  
 void setup()
 {
@@ -24,6 +13,7 @@ void setup()
 	driver.init();
 	colourSensor.init();
 	//lightSensor.init();
+  delay(2000);
 
 }
 
@@ -58,16 +48,9 @@ double PID()
 		error = maxError;
 		//Serial.println("minright");
 	}
-	// uint16_t* maximumValue = std::max_element(sensors, sensors + 6);
-	// if (maximumValue == (sensors + 6)) {
-	// 	error = 27000;
-	// } else if (maximumValue == sensors) {
-	// 	error = -27000;
-	// }
-	// double D = error - lastError;
 	double rotation{(error * KP) + ((error - lastError) * KD)};
 	
-	if (rotation > 1) rotation = 1;
+	if (rotation > 1) rotation = 1; // limit rotation to between 1 and -1
   if (rotation < -1) rotation = -1; 
 	
 	driver.differentialSteer(motorSpeed, rotation);
@@ -76,41 +59,22 @@ double PID()
 
 //	Serial.print(error);
 //	Serial.print("->");
-	Serial.println(rotation);
-//	double m1Speed = rotation > 0 ? motorSpeed : motorSpeed + rotation;
-//  double m2Speed = rotation > 0 ? motorSpeed - rotation : motorSpeed;
-//	driver.get_md().setSpeeds(m1Speed, -m2Speed);
-//  Serial.print(m1Speed); Serial.print(" | "); Serial.println(m2Speed); 
+//	Serial.println(rotation);
 }
 
-//void test() 
-//{ 
-// 	float r, g, b;
-// 	tcs.getRGB(&r, &g, &b);
-//	
-// 	auto HSBvalue = RGBtoHSB(r, g, b);
-//  Serial.print("R: "); Serial.println(r);
-//  Serial.print("G: "); Serial.println(g);
-//  Serial.print("B: "); Serial.println(b);
-//
-// 	Serial.print("H: "); Serial.println(HSBvalue.hue);
-// 	Serial.print("S: "); Serial.println(HSBvalue.saturation);
-// 	Serial.print("B: "); Serial.println(HSBvalue.brightness);
+//void turn(double angle)
+//{
+//  double initialAngle = gyro.read();
+//  Serial.print("Initial Angle: "); Serial.println(initialAngle);
+//  double difference = 0;
+//  while (difference < fabs(angle)) {
+//    driver.differentialSteer(motorSpeed, angle/180);
+//    double reading = gyro.read();
+//    difference = fabs(reading - initialAngle);
+//    Serial.print("Current: "); Serial.println(reading);
+//  }
+//  driver.differentialSteer(0, 0);
 //}
-
-void turn(double angle)
-{
-  double initialAngle = IMU.read();
-  Serial.print("Initial Angle: "); Serial.println(initialAngle);
-  double difference = 0;
-  while (difference < fabs(angle)) {
-    driver.differentialSteer(motorSpeed, angle/180);
-    double reading = IMU.read();
-    difference = fabs(reading - initialAngle);
-    Serial.print("Current: "); Serial.println(reading);
-  }
-  driver.differentialSteer(0, 0);
-}
 
 void checkGreen()
 {
@@ -130,6 +94,18 @@ void checkGreen()
 	}
 }
 
+#define LDRpin A15
+
+void checkRescueKit()
+{
+  for (int LDR = analogRead(A15); LDR > 300; LDR = analogRead(A15)) driver.differentialSteer(motorSpeed, 0);
+  driver.differentialSteer(0, 0);
+  delay(5000);
+}
+
 void loop() {
-  Serial.println(IMU.read());
+//  Serial.println("Start");
+//  checkRescueKit();
+//  delay(5000);
+  Serial.println(analogRead(A15));
 }
