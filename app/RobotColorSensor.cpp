@@ -32,7 +32,7 @@ void RobotColourSensor::init()
 
 HSB RobotColourSensor::RGBtoHSB(double red, double green, double blue)
 {
-	red /= 255, green /= 255, blue /= 255;
+  //red /= 255, green /= 255, blue /= 255;
 	double min, max, chroma;
 	HSB out;
 
@@ -50,11 +50,11 @@ HSB RobotColourSensor::RGBtoHSB(double red, double green, double blue)
 	if (chroma == 0) {
 		out.hue = 0;
 	} else if (max == red) {
-		out.hue = 60 * ((green - blue)/chroma);
+		out.hue = 60.00 * ((green - blue)/chroma);
 	} else if (max == green) {
-		out.hue = 60 * (2 + (blue-red)/chroma);
+		out.hue = 60.00 * (2.00 + (blue-red)/chroma);
 	} else if (max == blue) {
-		out.hue = 60 * (4 + (red - green)/chroma);
+		out.hue = 60.00 * (4.00 + (red - green)/chroma);
 	}
 
 	return out;
@@ -73,16 +73,28 @@ bool RobotColourSensor::isGreen(uint8_t sensorAddr)
 	auto HSBvalue = RGBtoHSB(r, g, b);
 
 //  Serial.print("H:"); Serial.print(HSBvalue.hue); 
-//  Serial.print(", S: "); Serial.print(HSBvalue.saturation);
+//  Serial.print(", S:"); Serial.print(HSBvalue.saturation);
 //  Serial.print(", B:"); Serial.println(HSBvalue.brightness);
 
-	if (HSBvalue.hue < 90 || HSBvalue.hue > 150) return false; // return false if out of bounds
+	if (HSBvalue.hue < 100 || HSBvalue.hue > 130) return false; // return false if out of bounds
   if (HSBvalue.saturation < 0.09 || HSBvalue.saturation > 0.42) return false;
-	if (HSBvalue.brightness < 0.23 || HSBvalue.brightness > 0.42) return false;
-
-	tcaselect(0);
+	if (HSBvalue.brightness < 58.65 || HSBvalue.brightness > 107.1) return false;
 
 	return true;
+}
+
+Turn RobotColourSensor::getTurn() {
+  bool leftColourSensor = colourSensor.isGreen(1);
+  bool rightColourSensor = colourSensor.isGreen(0);
+
+  if (!leftColourSensor && !rightColourSensor) return Turn::NONE;
+  if (!leftColourSensor) {
+    return Turn::RIGHT;
+  } else if (!rightColourSensor) {
+    return Turn::LEFT;
+  } else {
+    return Turn::U_TURN;
+  }
 }
 
 //void test() 
