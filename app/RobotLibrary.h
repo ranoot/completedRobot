@@ -8,28 +8,43 @@
 #define KD_TURN 0.019
 
 #define motorSpeed 0.25 //0.23
-#define M1 100
-#define M2 100
 #define IMU_BAUD_RATE 9600
+#define LDRpin A15
 // A15 for LDR
+#define BLACK_THRESHOLD 600
+#define TURN_DURATION 1500
 
 #include <Arduino.h>
+#include <Servo.h>
 #include <DualVNH5019MotorShield.h>
 #include <Adafruit_TCS34725.h>
 #include <QTRSensors.h>
 #include "Wire.h"
 #include <SoftwareSerial.h>
+#include <Servo.h>
 
 void tcaselect(uint8_t i);
 void turnTo(double angle);
-void turn(double angle);
+void turnLine(int direction, int n);
 
-enum class Turn {
-  NONE, 
-  RIGHT, 
-  LEFT, 
-  U_TURN
+enum class Turn { NONE, RIGHT, LEFT, U_TURN };
+
+enum class States {
+  RESET, 
+  LINE_TRACK, 
+  READ_COLOUR_SENSORS, 
+  INITIAL_TURN,
+  WAIT,
+  READ_BLACK_LINE,
+  STOP
 };
+
+struct State {
+  States currentState;
+  unsigned long initialTime;
+  int turnDirection;
+  int turnNumber;
+} state;
 
 struct HSB {
 	double hue;
@@ -51,8 +66,12 @@ class RobotLightSensor {
     public:
         void init();
         QTRSensors& qtrRef();
+        void updateReading();
+        uint16_t* currentReading();
+        bool isAllBlack();
     private:
         QTRSensors qtr;
+        uint16_t currentReading_[7];
 };
 
 class RobotColourSensor {
@@ -67,9 +86,15 @@ class RobotColourSensor {
 
 class Gyroscope {
   private:
+    enum gyroStates { START, READING, NOT_READING };
+    double currentReading_;
+    gyroStates currentState_;
   public:
     void init();
     double read();
+    double currentReading();
+    void gyroFSM();
+    gyroStates currentState();
 };
 
 class LineTrack {
@@ -77,7 +102,7 @@ class LineTrack {
     double maxError = 0;
     double lastError = 0;
   public:
-    void operator()();
+    void operator()(uint16_t* sensors);
     void reset();
 };
 

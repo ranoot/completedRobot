@@ -1,5 +1,5 @@
 #include "RobotLibrary.h"
-//
+
 void turnTo(double angle)
 {
   //if (angle < 0) rotation = -rotation;
@@ -8,10 +8,11 @@ void turnTo(double angle)
   //Serial.println(finalAngle);
   double reading;
   double difference;
+  int finalAngle = ((int)(angle + gyro.read()))%360;
   do {
     reading = gyro.read();
-    difference = ((int)angle+360-reading2)%360;
-    if (difference>180.0){
+    difference = (int)(finalAngle+360-reading)%360;
+    if (difference>180){
       driver.differentialSteer(motorSpeed-0.02, -1);
     }
     else{
@@ -23,8 +24,30 @@ void turnTo(double angle)
   driver.differentialSteer(0, 0);
 }
 
-void turn(double angle)
+void turnLine(int direction, int n)
 {
-  int finalAngle = ((int)(angle + gyro.read()))%360;
-  turnTo((double)finalAngle);
+  uint16_t checkB[7];
+  int dn = 0;
+  bool b = 0;
+  
+  while(dn < n){
+    //Serial.println("start turning....");
+    driver.differentialSteer(0.20, n*direction*0.8);
+    delay(1500);
+    while(!b){
+      //Serial.println("continue turning");
+      driver.differentialSteer(0.25, n*direction*0.8);
+      lightSensor.qtrRef().read(checkB);
+      for (int i = 2; i < 4; i++) {
+        if (checkB[i] > BLACK_THRESHOLD){
+          b = 1;
+          continue;
+        }
+      }
+    }
+    dn++;
+    Serial.print("dn:");Serial.println(dn);
+  }
+  
+driver.differentialSteer(0, 0);
 }
