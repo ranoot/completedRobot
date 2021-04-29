@@ -1,4 +1,3 @@
-#pragma once
 #ifndef ROBOTLIBRARY_H
 #define ROBOTLIBRARY_H
 
@@ -13,6 +12,11 @@
 #define M2 100
 #define IMU_BAUD_RATE 9600
 // A15 for LDR
+<<<<<<< HEAD
+=======
+#define BLACK_THRESHOLD 600
+#define TURN_DURATION 1500
+>>>>>>> parent of dde156d... unfinished refactoring
 
 #include <Arduino.h>
 #include <DualVNH5019MotorShield.h>
@@ -20,8 +24,6 @@
 #include <QTRSensors.h>
 #include "Wire.h"
 #include <SoftwareSerial.h>
-
-const uint8_t lightArrayPins[7] = {A8, A9, A10, A11, A12, A13, A14};
 
 void tcaselect(uint8_t i);
 void turnTo(double angle);
@@ -39,7 +41,12 @@ enum class States {
   STOP
 };
 
+<<<<<<< HEAD
 struct { //TODO: create state machine object
+=======
+struct State {
+  States currentState;
+>>>>>>> parent of dde156d... unfinished refactoring
   unsigned long initialTime;
   int turnDirection;
   int turnNumber;
