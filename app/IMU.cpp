@@ -56,7 +56,7 @@ double Gyroscope::currentReading()
   return currentReading_;
 }
 
-Gyroscope::gyroStates Gyroscope::currentState() 
+gyroStates Gyroscope::currentState() 
 {
   return currentState_;
 }

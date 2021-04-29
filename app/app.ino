@@ -9,12 +9,14 @@ Gyroscope gyro;
 void setup()
 {
 	Serial.begin(9600);
-  gyro.init();
+  IMU_SERIAL.begin(9600);
 	driver.init();
 	colourSensor.init();
-	lightSensor.init();
+//	lightSensor.init();
+  delay(2000);
 }
 
+<<<<<<< HEAD
 // void rotationCheck()
 // {
 //   Turn turnType = colourSensor.getTurn();
@@ -35,16 +37,46 @@ void setup()
 //        break;
 //   }
 // }
+=======
+void rotationCheck()
+{
+	Turn turnType = colourSensor.getTurn();
+  switch (turnType) {
+    case Turn::RIGHT:
+       Serial.println("Turning lmao");
+       turn(75);
+       break;
+     case Turn::LEFT:
+       Serial.println("Turning lmao1");
+       turn(-75);
+       break;
+     case Turn::U_TURN:
+       Serial.println("Turning lmao2");
+       turn(180);
+       break;
+     case Turn::NONE:
+       break;
+  }
+}
+>>>>>>> parent of a5d8094... state machine
+
+#define LDRpin A15
 
 void checkRescueKit()
 {
+<<<<<<< HEAD
   for (int LDR = analogRead(LDRpin); LDR > 300; LDR = analogRead(A15)) 
     driver.differentialSteer(1, 0);
+=======
+  for (int LDR = analogRead(A15); LDR > 300; LDR = analogRead(A15)) 
+    driver.differentialSteer(motorSpeed, 0);
+>>>>>>> parent of a5d8094... state machine
   driver.differentialSteer(0, 0);
   delay(5000);
 }
 DualVNH5019MotorShield md;
 void loop() {
+<<<<<<< HEAD
 //  gyro.gyroFSM();
   lightSensor.updateReading();
 //  for (int i = 0; i < 7; i++) {
@@ -113,4 +145,12 @@ void loop() {
    }
    break;
  }
+=======
+//  checkRescueKit();
+//  if (IMU_SERIAL.available()) Serial.println(IMU_SERIAL.read());
+//unsigned long timeStart = micros();
+//rotationCheck();
+//Serial.println(micros() - timeStart);
+//turn(90);
+>>>>>>> parent of a5d8094... state machine
 }

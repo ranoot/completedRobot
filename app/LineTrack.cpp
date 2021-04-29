@@ -5,7 +5,11 @@ void LineTrack::reset() {
   lastError = 0;
 };
 
-void LineTrack::operator()(uint16_t* sensors) {
+void LineTrack::operator()() {
+  uint16_t sensors[7];
+
+  lightSensor.qtrRef().read(sensors);
+
   double error = 0;
   uint16_t minValue{sensors[0]};
   
