@@ -13,11 +13,6 @@
 #define M2 100
 #define IMU_BAUD_RATE 9600
 // A15 for LDR
-<<<<<<< HEAD
-#define BLACK_THRESHOLD 700
-#define TURN_DURATION 1500
-=======
->>>>>>> parent of a5d8094... state machine
 
 #include <Arduino.h>
 #include <DualVNH5019MotorShield.h>
@@ -32,38 +27,23 @@ void tcaselect(uint8_t i);
 void turnTo(double angle);
 void turn(double angle);
 
-<<<<<<< HEAD
 enum class Turn { NONE, RIGHT, LEFT, U_TURN };
 
-class TravellingFSM {
-  private: 
-    void (TravellingFSM::*currentState)(void);
-
-    enum States {
-      RESET, 
-      LINE_TRACK, 
-      READ_COLOUR_SENSORS, 
-      INITIAL_TURN,
-      WAIT,
-      READ_BLACK_LINE,
-      STOP
-    };
-
-    struct { //TODO: create state machine object
-      unsigned long initialTime;
-      int turnDirection;
-      int turnNumber;
-    } state;
-  public:
-    void runIteration();
-=======
-enum class Turn {
-  NONE, 
-  RIGHT, 
-  LEFT, 
-  U_TURN
->>>>>>> parent of a5d8094... state machine
+enum class States {
+  RESET, 
+  LINE_TRACK, 
+  READ_COLOUR_SENSORS, 
+  INITIAL_TURN,
+  WAIT,
+  READ_BLACK_LINE,
+  STOP
 };
+
+struct { //TODO: create state machine object
+  unsigned long initialTime;
+  int turnDirection;
+  int turnNumber;
+} state;
 
 struct HSB {
 	double hue;
