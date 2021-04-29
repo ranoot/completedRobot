@@ -1,6 +1,6 @@
 #include "RobotLibrary.h"
 
-inline void Gyroscope::init()
+void Gyroscope::init()
 {
   currentState_ = NOT_READING; // Ensures 2 bytes are in buffer before read
   IMU_SERIAL.begin(IMU_BAUD_RATE);

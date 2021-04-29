@@ -1,3 +1,4 @@
+#pragma once
 #ifndef ROBOTLIBRARY_H
 #define ROBOTLIBRARY_H
 
@@ -11,7 +12,7 @@
 #define IMU_BAUD_RATE 9600
 #define LDRpin A15
 // A15 for LDR
-#define BLACK_THRESHOLD 600
+#define BLACK_THRESHOLD 700
 #define TURN_DURATION 1500
 
 #include <Arduino.h>
@@ -23,28 +24,36 @@
 #include <SoftwareSerial.h>
 #include <Servo.h>
 
+const uint8_t lightArrayPins[7] = {A8, A9, A10, A11, A12, A13, A14};
+
 void tcaselect(uint8_t i);
 void turnTo(double angle);
 void turnLine(int direction, int n);
 
 enum class Turn { NONE, RIGHT, LEFT, U_TURN };
 
-enum class States {
-  RESET, 
-  LINE_TRACK, 
-  READ_COLOUR_SENSORS, 
-  INITIAL_TURN,
-  WAIT,
-  READ_BLACK_LINE,
-  STOP
-};
+class TravellingFSM {
+  private: 
+    void (TravellingFSM::*currentState)(void);
 
-struct State {
-  States currentState;
-  unsigned long initialTime;
-  int turnDirection;
-  int turnNumber;
-} state;
+    enum States {
+      RESET, 
+      LINE_TRACK, 
+      READ_COLOUR_SENSORS, 
+      INITIAL_TURN,
+      WAIT,
+      READ_BLACK_LINE,
+      STOP
+    };
+
+    struct { //TODO: create state machine object
+      unsigned long initialTime;
+      int turnDirection;
+      int turnNumber;
+    } state;
+  public:
+    void runIteration();
+};
 
 struct HSB {
 	double hue;
