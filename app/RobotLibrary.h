@@ -1,3 +1,4 @@
+#pragma once
 #ifndef ROBOTLIBRARY_H
 #define ROBOTLIBRARY_H
 
@@ -12,11 +13,8 @@
 #define M2 100
 #define IMU_BAUD_RATE 9600
 // A15 for LDR
-<<<<<<< HEAD
-=======
 #define BLACK_THRESHOLD 600
 #define TURN_DURATION 1500
->>>>>>> parent of dde156d... unfinished refactoring
 
 #include <Arduino.h>
 #include <DualVNH5019MotorShield.h>
@@ -24,6 +22,8 @@
 #include <QTRSensors.h>
 #include "Wire.h"
 #include <SoftwareSerial.h>
+
+inline const uint8_t lightSensorPins[7] = {A8, A9, A10, A11, A12, A13, A14};
 
 void tcaselect(uint8_t i);
 void turnTo(double angle);
@@ -37,16 +37,11 @@ enum class States {
   READ_COLOUR_SENSORS, 
   INITIAL_TURN,
   WAIT,
-  READ_BLACK_LINE,
-  STOP
+  READ_BLACK_LINE
 };
 
-<<<<<<< HEAD
-struct { //TODO: create state machine object
-=======
 struct State {
   States currentState;
->>>>>>> parent of dde156d... unfinished refactoring
   unsigned long initialTime;
   int turnDirection;
   int turnNumber;
@@ -72,8 +67,12 @@ class RobotLightSensor {
     public:
         void init();
         QTRSensors& qtrRef();
+        bool isAllBlack();
+        void updateReading();
+        uint16_t* currentReading();
     private:
         QTRSensors qtr;
+        uint16_t currentReading_[7];
 };
 
 class RobotColourSensor {
@@ -88,9 +87,16 @@ class RobotColourSensor {
 
 class Gyroscope {
   private:
+    enum gyroStates { START, READING, NOT_READING };
+    gyroStates currentState_;
+    double currentReading_;
   public:
     void init();
     double read();
+    void gyroFSM();
+    double currentReading();
+    gyroStates currentState();
+
 };
 
 class LineTrack {
@@ -98,7 +104,7 @@ class LineTrack {
     double maxError = 0;
     double lastError = 0;
   public:
-    void operator()();
+    void operator()(uint16_t* sensors);
     void reset();
 };
 

@@ -17,8 +17,6 @@ void setup()
   delay(2000);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 // void rotationCheck()
 // {
 //   Turn turnType = colourSensor.getTurn();
@@ -39,7 +37,7 @@ void setup()
 //        break;
 //   }
 // }
-=======
+
 void rotationCheck()
 {
 	Turn turnType = colourSensor.getTurn();
@@ -60,68 +58,53 @@ void rotationCheck()
        break;
   }
 }
->>>>>>> parent of a5d8094... state machine
 
 #define LDRpin A15
-=======
-void rotationCheck()
-{
-  Turn turnType = colourSensor.getTurn();
-  switch (turnType) {
-    case Turn::RIGHT:
-      Serial.println("Turning right");
-      turnLine(1, 1);
-      break;
-    case Turn::LEFT:
-      Serial.println("Turning left");
-      turnLine(-1, 1);
-      break;
-    case Turn::U_TURN:
-      Serial.println("Turning 180");
-      turnLine(1, 2);
-      break;
-    case Turn::NONE:
-       break;
-  }
-}
->>>>>>> parent of dde156d... unfinished refactoring
+
+// void rotationCheck()
+// {
+//   Turn turnType = colourSensor.getTurn();
+//   switch (turnType) {
+//     case Turn::RIGHT:
+//       Serial.println("Turning right");
+//       turnLine(1, 1);
+//       break;
+//     case Turn::LEFT:
+//       Serial.println("Turning left");
+//       turnLine(-1, 1);
+//       break;
+//     case Turn::U_TURN:
+//       Serial.println("Turning 180");
+//       turnLine(1, 2);
+//       break;
+//     case Turn::NONE:
+//        break;
+//   }
+// }
 
 void checkRescueKit()
 {
-<<<<<<< HEAD
-  for (int LDR = analogRead(LDRpin); LDR > 300; LDR = analogRead(A15)) 
-<<<<<<< HEAD
-    driver.differentialSteer(1, 0);
-=======
+  
   for (int LDR = analogRead(A15); LDR > 300; LDR = analogRead(A15)) 
     driver.differentialSteer(motorSpeed, 0);
->>>>>>> parent of a5d8094... state machine
-=======
-    driver.differentialSteer(motorSpeed, 0);
->>>>>>> parent of dde156d... unfinished refactoring
   driver.differentialSteer(0, 0);
   delay(5000);
 }
 
 void loop() {
-<<<<<<< HEAD
-<<<<<<< HEAD
 //  gyro.gyroFSM();
-=======
   gyro.gyroFSM();
->>>>>>> parent of dde156d... unfinished refactoring
   lightSensor.updateReading();
   switch (state.currentState)
   {
   case States::RESET:
-    state = States::LINE_TRACK;
-    PID(lightSensor.currentReading());
+    state.currentState = States::LINE_TRACK;
     break;
 
   case States::LINE_TRACK:
-    PID();
+    PID(lightSensor.currentReading());
     if (lightSensor.isAllBlack()) {
-      state = States::READ_COLOUR_SENSORS;
+      state.currentState = States::READ_COLOUR_SENSORS;
     }
     break;
 
@@ -145,9 +128,9 @@ void loop() {
     }
 
     if (state.turnDirection && state.turnNumber) {
-      state = States::INITIAL_TURN;
+      state.currentState = States::INITIAL_TURN;
     } else {
-      state = States::LINE_TRACK;
+      state.currentState = States::LINE_TRACK;
     }
     break;
 
@@ -158,31 +141,9 @@ void loop() {
     break;
 
   case States::WAIT:
-    if (millis() - state.initialTime >= TURN_DURATION) state = States::READ_BLACK_LINE;
+    if (millis() - state.initialTime >= TURN_DURATION) state.currentState = States::READ_BLACK_LINE;
     break;
 
-<<<<<<< HEAD
- case States::READ_BLACK_LINE:
-   if (lightSensor.currentReading()[3] < BLACK_THRESHOLD) {
-     state.turnNumber--;
-     if (state.turnNumber == 0) {
-       state.turnDirection = 0;
-       state.currentState = States::RESET;
-     } else {
-       state.currentState = States::INITIAL_TURN;
-     }
-   }
-   break;
- }
-=======
-//  checkRescueKit();
-//  if (IMU_SERIAL.available()) Serial.println(IMU_SERIAL.read());
-//unsigned long timeStart = micros();
-//rotationCheck();
-//Serial.println(micros() - timeStart);
-//turn(90);
->>>>>>> parent of a5d8094... state machine
-=======
   case States::READ_BLACK_LINE:
     if (lightSensor.currentReading()[3] < BLACK_THRESHOLD) {
       state.turnNumber--;
@@ -195,5 +156,4 @@ void loop() {
     }
     break;
   }
->>>>>>> parent of dde156d... unfinished refactoring
 }
