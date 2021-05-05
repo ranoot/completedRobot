@@ -4,17 +4,12 @@
 
 #define KP 0.0008 //0.0008 with speed 0.25
 #define KD 0.019 //0.05, 0.019
-
-#define KP_TURN 0.0008
-#define KD_TURN 0.019
-
+#define LDR_PIN A15
 #define motorSpeed 0.25 //0.23
-#define M1 100
-#define M2 100
 #define IMU_BAUD_RATE 9600
-// A15 for LDR
-#define BLACK_THRESHOLD 600
-#define TURN_DURATION 1500
+
+#define BLACK_THRESHOLD 700
+#define TURN_DURATION 500
 
 #include <Arduino.h>
 #include <DualVNH5019MotorShield.h>
@@ -24,6 +19,14 @@
 #include <SoftwareSerial.h>
 
 inline const uint8_t lightSensorPins[7] = {A8, A9, A10, A11, A12, A13, A14};
+inline const char* stateStr[] = {
+  "RESET", 
+  "LINE_TRACK", 
+  "READ_COLOUR_SENSORS", 
+  "INITIAL_TURN",
+  "WAIT",
+  "READ_BLACK_LINE"
+};
 
 void tcaselect(uint8_t i);
 void turnTo(double angle);
@@ -35,13 +38,16 @@ enum class States {
   RESET, 
   LINE_TRACK, 
   READ_COLOUR_SENSORS, 
+  START,
   INITIAL_TURN,
   WAIT,
   READ_BLACK_LINE
 };
 
-struct State {
-  States currentState;
+
+inline struct State {
+  States currentState = States::RESET;
+  // int currentState = 0;
   unsigned long initialTime;
   int turnDirection;
   int turnNumber;

@@ -9,12 +9,11 @@ Gyroscope gyro;
 
 void setup()
 {
-	Serial.begin(9600);
+  Serial.begin(9600);
   IMU_SERIAL.begin(9600);
-	driver.init();
-	colourSensor.init();
-//	lightSensor.init();
-  delay(2000);
+  driver.init();
+  colourSensor.init();
+	lightSensor.init();
 }
 
 // void rotationCheck()
@@ -38,28 +37,26 @@ void setup()
 //   }
 // }
 
-void rotationCheck()
-{
-	Turn turnType = colourSensor.getTurn();
-  switch (turnType) {
-    case Turn::RIGHT:
-       Serial.println("Turning lmao");
-       turn(75);
-       break;
-     case Turn::LEFT:
-       Serial.println("Turning lmao1");
-       turn(-75);
-       break;
-     case Turn::U_TURN:
-       Serial.println("Turning lmao2");
-       turn(180);
-       break;
-     case Turn::NONE:
-       break;
-  }
-}
-
-#define LDRpin A15
+// void rotationCheck()
+// {
+// 	Turn turnType = colourSensor.getTurn();
+//   switch (turnType) {
+//     case Turn::RIGHT:
+//        Serial.println("Turning lmao");
+//        turn(75);
+//        break;
+//      case Turn::LEFT:
+//        Serial.println("Turning lmao1");
+//        turn(-75);
+//        break;
+//      case Turn::U_TURN:
+//        Serial.println("Turning lmao2");
+//        turn(180);
+//        break;
+//      case Turn::NONE:
+//        break;
+//   }
+// }
 
 // void rotationCheck()
 // {
@@ -91,11 +88,13 @@ void checkRescueKit()
   delay(5000);
 }
 
+void printState() { Serial.println(stateStr[static_cast<int>(state.currentState)]); }
+
 void loop() {
-//  gyro.gyroFSM();
-  gyro.gyroFSM();
+  // //gyro.gyroFSM();
   lightSensor.updateReading();
-  switch (state.currentState)
+  printState();
+  switch (States::INITIAL_TURN)
   {
   case States::RESET:
     state.currentState = States::LINE_TRACK;
@@ -124,6 +123,8 @@ void loop() {
         state.turnNumber = 2;
         break;
       case Turn::NONE:
+        state.turnDirection = 0;
+        state.turnNumber = 0;
         break;
     }
 
@@ -135,8 +136,11 @@ void loop() {
     break;
 
   case States::INITIAL_TURN:
+    Serial.println("bruh 2"); 
     state.initialTime = millis();
+    Serial.println("bruh1");
     driver.differentialSteer(motorSpeed, state.turnDirection*state.turnNumber*0.8);
+    Serial.println("Hello?");
     state.currentState = States::WAIT;
     break;
 
@@ -155,5 +159,20 @@ void loop() {
       }
     }
     break;
+
+  default:
+    Serial.println("no match");
+    break;
   }
+  //  ~~Testing stuff~~
+
+  // uint16_t* currentReading = lightSensor.currentReading();
+  // for (int i = 0; i < 7; i++) {
+  //   Serial.print(currentReading[i]);
+  //   Serial.print(" ");
+  // }
+  // Serial.println();
+  // Serial.println(lightSensor.isAllBlack());
+
+  // PID(lightSensor.currentReading());
 }

@@ -28,7 +28,7 @@ bool RobotLightSensor::isAllBlack()
   bool val = true;
   for (int i = 0; i < 7; i++)
   {
-    if (currentReading_[i] > 600) {
+    if (currentReading_[i] < BLACK_THRESHOLD) {
       val = false;
       break;
     }
