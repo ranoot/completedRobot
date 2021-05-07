@@ -14,6 +14,7 @@ void setup()
   driver.init();
   colourSensor.init();
 	lightSensor.init();
+  state.currentState = States::RESET;
 }
 
 // void rotationCheck()
@@ -93,63 +94,87 @@ void printState() { Serial.println(stateStr[static_cast<int>(state.currentState)
 void loop() {
   // //gyro.gyroFSM();
   lightSensor.updateReading();
-  printState();
-  switch (States::INITIAL_TURN)
+  // #ifdef PRINT_STATE
+  //   printState();
+  // #endif
+
+  #if !(defined(TEST_LINE_TRACK) || defined(TEST_LIGHT_SENSOR) || defined(TEST_COLOUR_SENSORS))
+  switch (state.currentState)
   {
   case States::RESET:
     state.currentState = States::LINE_TRACK;
     break;
 
   case States::LINE_TRACK:
-    PID(lightSensor.currentReading());
-    if (lightSensor.isAllBlack()) {
-      state.currentState = States::READ_COLOUR_SENSORS;
+    {
+      #ifdef PRINT_STATE 
+        Serial.println("LINE TRACKING"); 
+      #endif
+      PID(lightSensor.currentReading());
+      if (lightSensor.isAllBlack()) {
+        state.currentState = States::READ_COLOUR_SENSORS;
+      }
     }
     break;
 
   case States::READ_COLOUR_SENSORS:
-    Turn turnType = colourSensor.getTurn();
-    switch (turnType) {
-      case Turn::RIGHT:
-        state.turnDirection = 1;
-        state.turnNumber = 1;
-        break;
-      case Turn::LEFT:
-        state.turnDirection = -1;
-        state.turnNumber = 1;
-        break;
-      case Turn::U_TURN:
-        state.turnDirection = 1;
-        state.turnNumber = 2;
-        break;
-      case Turn::NONE:
-        state.turnDirection = 0;
-        state.turnNumber = 0;
-        break;
-    }
+    {
+      #ifdef PRINT_STATE 
+        Serial.println("READING COLOUR SENSORS"); 
+      #endif
+      driver.differentialSteer(0, 0);
+      Turn turnType = colourSensor.getTurn();
+      #ifdef PRINT_TURN
+        printTurn(turnType);
+      #endif
+      switch (turnType) {
+        case Turn::RIGHT:
+          state.turnDirection = 1;
+          state.turnNumber = 1;
+          break;
+        case Turn::LEFT:
+          state.turnDirection = -1;
+          state.turnNumber = 1;
+          break;
+        case Turn::U_TURN:
+          state.turnDirection = 1;
+          state.turnNumber = 2;
+          break;
+        case Turn::NONE:
+          state.turnDirection = 0;
+          state.turnNumber = 0;
+          break;
+      }
 
-    if (state.turnDirection && state.turnNumber) {
-      state.currentState = States::INITIAL_TURN;
-    } else {
-      state.currentState = States::LINE_TRACK;
+      if (state.turnDirection && state.turnNumber) {
+        state.currentState = States::INITIAL_TURN;
+      } else /*if (!lightSensor.isAllBlack())*/ {
+        state.currentState = States::LINE_TRACK;
+      }
     }
     break;
 
   case States::INITIAL_TURN:
-    Serial.println("bruh 2"); 
+    #ifdef PRINT_STATE 
+      Serial.println("DOING INITIAL TURN"); 
+    #endif
     state.initialTime = millis();
-    Serial.println("bruh1");
-    driver.differentialSteer(motorSpeed, state.turnDirection*state.turnNumber*0.8);
-    Serial.println("Hello?");
+    driver.differentialSteer(ROTATION_SPEED, state.turnDirection*state.turnNumber*0.9);
     state.currentState = States::WAIT;
     break;
 
   case States::WAIT:
+    #ifdef PRINT_STATE 
+      Serial.println("WAITING"); 
+    #endif
     if (millis() - state.initialTime >= TURN_DURATION) state.currentState = States::READ_BLACK_LINE;
     break;
 
   case States::READ_BLACK_LINE:
-    if (lightSensor.currentReading()[3] < BLACK_THRESHOLD) {
+    #ifdef PRINT_STATE 
+      Serial.println("READING BLACK LINE"); 
+    #endif
+    if (lightSensor.currentReading()[3] > BLACK_THRESHOLD) {
       state.turnNumber--;
       if (state.turnNumber == 0) {
         state.turnDirection = 0;
@@ -164,15 +189,25 @@ void loop() {
     Serial.println("no match");
     break;
   }
+  #endif
   //  ~~Testing stuff~~
+  #ifdef TEST_COLOUR_SENSORS
+    Serial.print("Right: "); Serial.print(colourSensor.isGreen(0));
+    Serial.print("| Left: "); Serial.print(colourSensor.isGreen(1));
+    Serial.println();
+  #endif
 
-  // uint16_t* currentReading = lightSensor.currentReading();
-  // for (int i = 0; i < 7; i++) {
-  //   Serial.print(currentReading[i]);
-  //   Serial.print(" ");
-  // }
-  // Serial.println();
-  // Serial.println(lightSensor.isAllBlack());
+  #ifdef TEST_LIGHT_SENSOR
+    uint16_t* currentReading = lightSensor.currentReading();
+    for (int i = 0; i < 7; i++) {
+      Serial.print(currentReading[i]);
+      Serial.print(" ");
+    }
+    Serial.println();
+    Serial.println(lightSensor.isAllBlack());
+  #endif
 
-  // PID(lightSensor.currentReading());
+  #ifdef TEST_LINE_TRACK
+    PID(lightSensor.currentReading());
+  #endif
 }

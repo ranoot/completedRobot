@@ -14,7 +14,7 @@ void RobotDriver::differentialSteer(double speed, double rotation)
 		md.setM1Speed(-(400*speed)); 
 		md.setM2Speed(400*(speed-2*speed*fabs(rotation)));
 	}
-	if (rotation>=0)
+	if (rotation>=00)
 	{
 		md.setM1Speed(-(400*(speed-2*speed*fabs(rotation))));
 		md.setM2Speed(400*speed);

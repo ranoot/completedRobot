@@ -3,13 +3,20 @@
 #define ROBOTLIBRARY_H
 
 #define KP 0.0008 //0.0008 with speed 0.25
-#define KD 0.019 //0.05, 0.019
+#define KD 0.02 //0.05, 0.019
 #define LDR_PIN A15
-#define motorSpeed 0.25 //0.23
+#define motorSpeed 0.25 //0.22
+#define ROTATION_SPEED 0.35
 #define IMU_BAUD_RATE 9600
 
 #define BLACK_THRESHOLD 700
-#define TURN_DURATION 500
+#define TURN_DURATION 600
+
+#define PRINT_STATE
+#define PRINT_TURN
+// #define TEST_COLOUR_SENSORS
+// #define TEST_LIGHT_SENSOR
+// #define TEST_LINE_TRACK
 
 #include <Arduino.h>
 #include <DualVNH5019MotorShield.h>
@@ -27,10 +34,7 @@ inline const char* stateStr[] = {
   "WAIT",
   "READ_BLACK_LINE"
 };
-
-void tcaselect(uint8_t i);
-void turnTo(double angle);
-void turn(double angle);
+inline const char* turnsStr[] = {"NONE", "RIGHT", "LEFT", "U_TURN"};
 
 enum class Turn { NONE, RIGHT, LEFT, U_TURN };
 
@@ -38,7 +42,6 @@ enum class States {
   RESET, 
   LINE_TRACK, 
   READ_COLOUR_SENSORS, 
-  START,
   INITIAL_TURN,
   WAIT,
   READ_BLACK_LINE
@@ -46,7 +49,7 @@ enum class States {
 
 
 inline struct State {
-  States currentState = States::RESET;
+  States currentState;
   // int currentState = 0;
   unsigned long initialTime;
   int turnDirection;
@@ -113,6 +116,11 @@ class LineTrack {
     void operator()(uint16_t* sensors);
     void reset();
 };
+
+void tcaselect(uint8_t i);
+void turnTo(double angle);
+void turn(double angle);
+void printTurn(Turn turn);
 
 inline SoftwareSerial IMU_SERIAL(53, 52); // RX, TX. the one closer to the power is tx
 extern RobotDriver driver;

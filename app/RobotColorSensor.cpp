@@ -1,7 +1,8 @@
 #include "RobotLibrary.h"
 #define TCAADDR 0x70
 
-void tcaselect(uint8_t i) {
+void tcaselect(uint8_t i) 
+{
 	if (i > 7) return;
 	
 	Wire.beginTransmission(TCAADDR);
@@ -9,10 +10,17 @@ void tcaselect(uint8_t i) {
 	Wire.endTransmission();  
 }
 
+void printTurn(Turn turn)
+{
+  Serial.println( turnsStr[static_cast<int>(turn)] );
+}
+
 void RobotColourSensor::init()
 {
   // TCS (1) is on the starboard side
   // TCS (2) is on the port side
+  tcs.setIntegrationTime(TCS34725_INTEGRATIONTIME_24MS);
+  tcs.setGain(TCS34725_GAIN_4X);
 	tcaselect(0);
 	if (tcs.begin()) {
   	Serial.println("Found sensor");
@@ -72,13 +80,15 @@ bool RobotColourSensor::isGreen(uint8_t sensorAddr)
   
 	auto HSBvalue = RGBtoHSB(r, g, b);
 
-  // Serial.print("H:"); Serial.print(HSBvalue.hue); 
-  // Serial.print(", S:"); Serial.print(HSBvalue.saturation);
-  // Serial.print(", B:"); Serial.println(HSBvalue.brightness);
+  #ifdef TEST_COLOUR_SENSORS
+    Serial.print("H:"); Serial.print(HSBvalue.hue); 
+    Serial.print(", S:"); Serial.print(HSBvalue.saturation);
+    Serial.print(", B:"); Serial.print(HSBvalue.brightness); Serial.print("; ");
+  #endif
 
-	if (HSBvalue.hue < 100 || HSBvalue.hue > 130) return false; // return false if out of bounds
-  if (HSBvalue.saturation < 0.09 || HSBvalue.saturation > 0.42) return false;
-	if (HSBvalue.brightness < 58.65 || HSBvalue.brightness > 115.1) return false;
+  if (HSBvalue.hue < 70 || HSBvalue.hue > 165) return false; // return false if out of bounds
+  if (HSBvalue.saturation < 0.07 || HSBvalue.saturation > 0.42) return false;
+  if (HSBvalue.brightness < 50.65 || HSBvalue.brightness > 118.1) return false;
 
 	return true;
 }
