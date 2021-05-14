@@ -5,34 +5,40 @@ void LineTrack::reset() {
   lastError = 0;
 };
 
-void LineTrack::operator()(uint16_t* sensors) {
+void LineTrack::operator()(double* sensors) {
   double error = 0;
-  uint16_t minValue{sensors[0]}; 
+  double maxValue{sensors[0]}; 
+
+  int lowestIndex = 0;
+  for (int j = 1; j <= 6; j++) {
+    // Serial.println(maxValue);
+    if (sensors[j] > maxValue) {
+      maxValue = sensors[j];
+      lowestIndex = j;
+    }
+  }
   // When only the leftmost or rightmost sensor is on the blackline 
   // -> error values may be lower than expected
   
   for (int i = 0, sensorID = -3; i < 7; i++, sensorID++) {
-    double sensorReading = (double)sensors[i];
     // Serial.print(sensorID);
     // Serial.print(": ");
     // Serial.print(sensorReading);
     // Serial.print(" ");
-    error += sensorID * sensorReading;
+    error += sensorID * sensors[i];
   }
   
   if (error > maxError) maxError = error; // Calculate maximum rotation on the go
   
-  for (int j = 1; j <= 6; j++) {
-    // Serial.println(minValue);
-    minValue = (sensors[j] > minValue) ? sensors[j] : minValue;
-  }
-  if (sensors[0] == minValue) {
+  
+  if (lowestIndex == 0) {
     error = -maxError;
     //Serial.println("minleft");
-  } else if (sensors[6] == minValue) {
+  } else if (lowestIndex == 6) {
     error = maxError;
     //Serial.println("minright");
   }
+
   double rotation{(error * KP) + ((error - lastError) * KD)};
   
   if (rotation > 1) rotation = 1; // limit rotation to between 1 and -1

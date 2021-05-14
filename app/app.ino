@@ -14,71 +14,22 @@ void setup()
   driver.init();
   colourSensor.init();
 	lightSensor.init();
-  state.currentState = States::RESET;
+  #if defined(TEST_RIGHT_ANGLE_TURN)
+    state.currentState = States::INITIAL_TURN;
+    state.turnDirection = 1;
+    state.cycles = 1;
+  #endif
+
+  #if defined(TEST_U_TURN)
+    state.currentState = States::INITIAL_TURN;
+    state.turnDirection = 1;
+    state.cycles = 2;
+  #endif
+
+  #if !(defined(TEST_180_TURN) || defined(TEST_RIGHT_ANGLE_TURN))
+    state.currentState = States::RESET;
+  #endif
 }
-
-// void rotationCheck()
-// {
-//   Turn turnType = colourSensor.getTurn();
-//   switch (turnType) {
-//     case Turn::RIGHT:
-//       Serial.println("Turning right");
-//       turnLine(1, 1);
-//       break;
-//     case Turn::LEFT:
-//       Serial.println("Turning left");
-//       turnLine(-1, 1);
-//       break;
-//     case Turn::U_TURN:
-//       Serial.println("Turning 180");
-//       turnLine(1, 2);
-//       break;
-//     case Turn::NONE:
-//        break;
-//   }
-// }
-
-// void rotationCheck()
-// {
-// 	Turn turnType = colourSensor.getTurn();
-//   switch (turnType) {
-//     case Turn::RIGHT:
-//        Serial.println("Turning lmao");
-//        turn(75);
-//        break;
-//      case Turn::LEFT:
-//        Serial.println("Turning lmao1");
-//        turn(-75);
-//        break;
-//      case Turn::U_TURN:
-//        Serial.println("Turning lmao2");
-//        turn(180);
-//        break;
-//      case Turn::NONE:
-//        break;
-//   }
-// }
-
-// void rotationCheck()
-// {
-//   Turn turnType = colourSensor.getTurn();
-//   switch (turnType) {
-//     case Turn::RIGHT:
-//       Serial.println("Turning right");
-//       turnLine(1, 1);
-//       break;
-//     case Turn::LEFT:
-//       Serial.println("Turning left");
-//       turnLine(-1, 1);
-//       break;
-//     case Turn::U_TURN:
-//       Serial.println("Turning 180");
-//       turnLine(1, 2);
-//       break;
-//     case Turn::NONE:
-//        break;
-//   }
-// }
 
 void checkRescueKit()
 {
@@ -94,11 +45,12 @@ void printState() { Serial.println(stateStr[static_cast<int>(state.currentState)
 void loop() {
   // //gyro.gyroFSM();
   lightSensor.updateReading();
-  // #ifdef PRINT_STATE
-  //   printState();
-  // #endif
+  #ifdef PRINT_STATE
+    printState();
+    // Serial.println(state.cycles);
+  #endif
 
-  #if !(defined(TEST_LINE_TRACK) || defined(TEST_LIGHT_SENSOR) || defined(TEST_COLOUR_SENSORS))
+  #if !(defined(TEST_LINE_TRACK) || defined(TEST_LIGHT_SENSOR) || defined(TEST_COLOUR_SENSORS) || defined(TEST_MOTORS))
   switch (state.currentState)
   {
   case States::RESET:
@@ -112,7 +64,13 @@ void loop() {
       #endif
       PID(lightSensor.currentReading());
       if (lightSensor.isAllBlack()) {
+        // Serial.println("Hello?");
+        // driver.differentialSteer(motorSpeed, 0);
+        // delay(FORWARD_SUS);
+        // driver.differentialSteer(0, 0);
         state.currentState = States::READ_COLOUR_SENSORS;
+      } else if (lightSensor.isAllWhite()) {
+        state.currentState = States::INITIAL_FORWARD;
       }
     }
     break;
@@ -122,7 +80,7 @@ void loop() {
       #ifdef PRINT_STATE 
         Serial.println("READING COLOUR SENSORS"); 
       #endif
-      driver.differentialSteer(0, 0);
+      // driver.differentialSteer(0, 0);
       Turn turnType = colourSensor.getTurn();
       #ifdef PRINT_TURN
         printTurn(turnType);
@@ -130,23 +88,23 @@ void loop() {
       switch (turnType) {
         case Turn::RIGHT:
           state.turnDirection = 1;
-          state.turnNumber = 1;
+          state.cycles = 1;
           break;
         case Turn::LEFT:
           state.turnDirection = -1;
-          state.turnNumber = 1;
+          state.cycles = 1;
           break;
         case Turn::U_TURN:
           state.turnDirection = 1;
-          state.turnNumber = 2;
+          state.cycles = 2;
           break;
         case Turn::NONE:
           state.turnDirection = 0;
-          state.turnNumber = 0;
+          state.cycles = 0;
           break;
       }
 
-      if (state.turnDirection && state.turnNumber) {
+      if (state.turnDirection && state.cycles) {
         state.currentState = States::INITIAL_TURN;
       } else /*if (!lightSensor.isAllBlack())*/ {
         state.currentState = States::LINE_TRACK;
@@ -159,7 +117,8 @@ void loop() {
       Serial.println("DOING INITIAL TURN"); 
     #endif
     state.initialTime = millis();
-    driver.differentialSteer(ROTATION_SPEED, state.turnDirection*state.turnNumber*0.9);
+    state.waitDuration = TURN_DURATION;
+    driver.differentialSteer(ROTATION_SPEED, state.turnDirection*state.cycles*TURN_CONSTANT);
     state.currentState = States::WAIT;
     break;
 
@@ -167,23 +126,38 @@ void loop() {
     #ifdef PRINT_STATE 
       Serial.println("WAITING"); 
     #endif
-    if (millis() - state.initialTime >= TURN_DURATION) state.currentState = States::READ_BLACK_LINE;
+    if (millis() - state.initialTime >= state.waitDuration) state.currentState = States::READ_BLACK_LINE;
     break;
 
   case States::READ_BLACK_LINE:
     #ifdef PRINT_STATE 
       Serial.println("READING BLACK LINE"); 
     #endif
-    if (lightSensor.currentReading()[3] > BLACK_THRESHOLD) {
-      state.turnNumber--;
-      if (state.turnNumber == 0) {
-        state.turnDirection = 0;
-        state.currentState = States::RESET;
-      } else {
-        state.currentState = States::INITIAL_TURN;
+    {
+      for (int i = 0; i < 7; i++) {
+        if (lightSensor.currentReading()[i] > BLACK_THRESHOLD) {
+          state.cycles--;
+          if (state.cycles == 0) {
+            state.turnDirection = 0;
+            state.currentState = States::RESET;
+          } else {
+            state.currentState = States::INITIAL_TURN;
+          }
+          break;
+        }
       }
     }
     break;
+
+  case States::INITIAL_FORWARD:
+  {
+    state.cycles = 1;
+    state.initialTime = millis();
+    state.waitDuration = FORWARD_DURATION;
+    driver.differentialSteer(motorSpeed, 0);
+    state.currentState = States::WAIT;
+  }
+  break;
 
   default:
     Serial.println("no match");
@@ -192,13 +166,24 @@ void loop() {
   #endif
   //  ~~Testing stuff~~
   #ifdef TEST_COLOUR_SENSORS
-    Serial.print("Right: "); Serial.print(colourSensor.isGreen(0));
-    Serial.print("| Left: "); Serial.print(colourSensor.isGreen(1));
-    Serial.println();
+    // float r1, g1, b1, r2, g2, b2;
+    
+    // tcaselect(0);
+    // tcs.getRGB(&r1, &g1, &b1);
+
+    // tcaselect(1);
+    // tcs.getRGB(&r2, &g2, &b2);
+
+    // bool leftColourSensor = colourSensor.isGreen(r2, g2, b2);
+    // bool rightColourSensor = colourSensor.isGreen(r1, g1, b1);
+    // Serial.print("Right: "); Serial.print(rightColourSensor);
+    // Serial.print("| Left: "); Serial.print(leftColourSensor);
+    colourSensor.getTurn();
+    // Serial.println();
   #endif
 
   #ifdef TEST_LIGHT_SENSOR
-    uint16_t* currentReading = lightSensor.currentReading();
+    double* currentReading = lightSensor.currentReading();
     for (int i = 0; i < 7; i++) {
       Serial.print(currentReading[i]);
       Serial.print(" ");
@@ -209,5 +194,9 @@ void loop() {
 
   #ifdef TEST_LINE_TRACK
     PID(lightSensor.currentReading());
+  #endif
+
+  #ifdef TEST_MOTORS
+    driver.differentialSteer(1, 0);
   #endif
 }

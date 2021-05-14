@@ -7,6 +7,8 @@ void RobotDriver::init()
 
 void RobotDriver::differentialSteer(double speed, double rotation) 
 {
+	if(rotation > 1) rotation = 1;
+	if(rotation < -1) rotation = -1;
   // positive rotation is clockwise
   // negation of md.setM2Speed since motors were installed incorrectly
 	if (rotation<=0)
@@ -14,7 +16,7 @@ void RobotDriver::differentialSteer(double speed, double rotation)
 		md.setM1Speed(-(400*speed)); 
 		md.setM2Speed(400*(speed-2*speed*fabs(rotation)));
 	}
-	if (rotation>=00)
+	if (rotation>=0)
 	{
 		md.setM1Speed(-(400*(speed-2*speed*fabs(rotation))));
 		md.setM2Speed(400*speed);

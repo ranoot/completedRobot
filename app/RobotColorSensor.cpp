@@ -19,8 +19,8 @@ void RobotColourSensor::init()
 {
   // TCS (1) is on the starboard side
   // TCS (2) is on the port side
-  tcs.setIntegrationTime(TCS34725_INTEGRATIONTIME_24MS);
-  tcs.setGain(TCS34725_GAIN_4X);
+  tcs.setIntegrationTime(TCS34725_INTEGRATIONTIME_50MS);
+  tcs.setGain(TCS34725_GAIN_16X);
 	tcaselect(0);
 	if (tcs.begin()) {
   	Serial.println("Found sensor");
@@ -41,61 +41,73 @@ void RobotColourSensor::init()
 HSB RobotColourSensor::RGBtoHSB(double red, double green, double blue)
 {
   //red /= 255, green /= 255, blue /= 255;
-	double min, max, chroma;
-	HSB out;
+  double min, max, chroma;
+  HSB out;
 
-	min = red < green ? red : green;
-	min = min < blue ? min : blue;
+  min = red < green ? red : green;
+  min = min < blue ? min : blue;
 
-	max = red > green ? red : green;
-	max = max > blue ? max : blue;
+  max = red > green ? red : green;
+  max = max > blue ? max : blue;
 
-	chroma = max - min;
+  chroma = max - min;
 
-	out.brightness = max;
-	out.saturation = out.brightness == 0 ? 0 : chroma/max;
+  out.brightness = max;
+  out.saturation = out.brightness == 0 ? 0 : chroma/max;
 
-	if (chroma == 0) {
-		out.hue = 0;
-	} else if (max == red) {
-		out.hue = 60.00 * ((green - blue)/chroma);
-	} else if (max == green) {
-		out.hue = 60.00 * (2.00 + (blue-red)/chroma);
-	} else if (max == blue) {
-		out.hue = 60.00 * (4.00 + (red - green)/chroma);
-	}
+  if (chroma == 0) {
+    out.hue = 0;
+  } else if (max == red) {
+    out.hue = 60.00 * ((green - blue)/chroma);
+  } else if (max == green) {
+    out.hue = 60.00 * (2.00 + (blue-red)/chroma);
+  } else if (max == blue) {
+    out.hue = 60.00 * (4.00 + (red - green)/chroma);
+  }
 
-	return out;
+  #ifdef TEST_COLOUR_SENSORS
+    Serial.print("R:"); Serial.print(red); 
+    Serial.print(", G:"); Serial.print(green);
+    Serial.print(", B:"); Serial.print(blue); Serial.print("; ");
+
+    Serial.print("H:"); Serial.print(out.hue); 
+    Serial.print(", S:"); Serial.print(out.saturation);
+    Serial.print(", B:"); Serial.print(out.brightness); Serial.print("; ");
+  #endif
+
+  return out;
 }
 
-bool RobotColourSensor::isGreen(uint8_t sensorAddr)
+bool RobotColourSensor::isGreen(float r, float g, float b)
 {
-	if (sensorAddr > 1) {
-		Serial.println("Colour sensor selected out of range");
-		while(1);
-	};
-	float r, g, b;
-	tcaselect(sensorAddr);
-	tcs.getRGB(&r, &g, &b);
+	// if (sensorAddr > 1) {
+	// 	Serial.println("Colour sensor selected out of range");
+	// 	while(1);
+	// };
+	// float r, g, b;
+	// tcaselect(sensorAddr);
+	// tcs.getRGB(&r, &g, &b);
   
 	auto HSBvalue = RGBtoHSB(r, g, b);
 
-  #ifdef TEST_COLOUR_SENSORS
-    Serial.print("H:"); Serial.print(HSBvalue.hue); 
-    Serial.print(", S:"); Serial.print(HSBvalue.saturation);
-    Serial.print(", B:"); Serial.print(HSBvalue.brightness); Serial.print("; ");
-  #endif
-
-  if (HSBvalue.hue < 70 || HSBvalue.hue > 165) return false; // return false if out of bounds
-  if (HSBvalue.saturation < 0.07 || HSBvalue.saturation > 0.42) return false;
+  if (HSBvalue.hue < 70 || HSBvalue.hue > 150) return false; // return false if out of bounds
+  if (HSBvalue.saturation < 0.10 || HSBvalue.saturation > 0.42) return false;
   if (HSBvalue.brightness < 50.65 || HSBvalue.brightness > 118.1) return false;
 
 	return true;
 }
 
 Turn RobotColourSensor::getTurn() {
-  bool leftColourSensor = colourSensor.isGreen(1);
-  bool rightColourSensor = colourSensor.isGreen(0);
+  float r1, g1, b1, r2, g2, b2;
+  
+  tcaselect(0);
+  tcs.getRGB(&r1, &g1, &b1);
+
+  tcaselect(1);
+  tcs.getRGB(&r2, &g2, &b2);
+
+  bool leftColourSensor = colourSensor.isGreen(r2, g2, b2);
+  bool rightColourSensor = colourSensor.isGreen(r1, g1, b1);
 
   if (!leftColourSensor && !rightColourSensor) return Turn::NONE;
   if (!leftColourSensor) {
@@ -106,18 +118,3 @@ Turn RobotColourSensor::getTurn() {
     return Turn::U_TURN;
   }
 }
-
-//void test() 
-//{ 
-//   float r, g, b;
-//  tcs.getRGB(&r, &g, &b);
-//  
-//  auto HSBvalue = RGBtoHSB(r, g, b);
-//  Serial.print("R: "); Serial.println(r);
-//  Serial.print("G: "); Serial.println(g);
-//  Serial.print("B: "); Serial.println(b);
-//
-//  Serial.print("H: "); Serial.println(HSBvalue.hue);
-//  Serial.print("S: "); Serial.println(HSBvalue.saturation);
-//  Serial.print("B: "); Serial.println(HSBvalue.brightness);
-//}
