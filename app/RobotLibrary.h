@@ -3,19 +3,18 @@
 #define ROBOTLIBRARY_H
 
 #define KP 0.205 //0.0008 with speed 0.25
-#define KD 8//12
+#define KD 10//12
  //0.05, 0.019
 #define LDR_PIN A15
-#define motorSpeed 0.2 //0.22
+#define motorSpeed 0.18 //0.22
 #define CALIBRATION_MOTOR_SPEED 0.2
 #define ROTATION_SPEED 0.23
 #define IMU_BAUD_RATE 9600
 
 #define BLACK_THRESHOLD 0.5
 #define TURN_DURATION 900
-#define TURN_CONSTANT 0.87
+#define TURN_CONSTANT 0.85
 #define FORWARD_DURATION 500
-#define FORWARD_SUS 10
 
 // ~ testing switches ~
 // #define PRINT_STATE
@@ -65,6 +64,7 @@ inline struct State {
   int turnDirection;
   int cycles = 0;
   int waitDuration;
+  int counter;
 } state;
 
 struct HSB {
@@ -106,7 +106,6 @@ class RobotColourSensor {
     bool isGreen(float r, float g, float b);
     HSB RGBtoHSB(double red, double green, double blue);
     Turn getTurn();
-    Adafruit_TCS34725& getTcs();
   private:
     Adafruit_TCS34725 tcs;
 };

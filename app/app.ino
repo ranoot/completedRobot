@@ -64,11 +64,8 @@ void loop() {
       #endif
       PID(lightSensor.currentReading());
       if (lightSensor.isAllBlack()) {
-        // Serial.println("Hello?");
-        // driver.differentialSteer(motorSpeed, 0);
-        // delay(FORWARD_SUS);
-        // driver.differentialSteer(0, 0);
         state.currentState = States::READ_COLOUR_SENSORS;
+        // state.counter = 2;
       } else if (lightSensor.isAllWhite()) {
         state.currentState = States::INITIAL_FORWARD;
       }
@@ -105,6 +102,8 @@ void loop() {
       }
 
       if (state.turnDirection && state.cycles) {
+        // if(state.cycles == 2 || state.counter == 0)state.currentState = States::INITIAL_TURN;
+        // else state.counter--;
         state.currentState = States::INITIAL_TURN;
       } else /*if (!lightSensor.isAllBlack())*/ {
         state.currentState = States::LINE_TRACK;
@@ -118,7 +117,7 @@ void loop() {
     #endif
     state.initialTime = millis();
     state.waitDuration = TURN_DURATION;
-    driver.differentialSteer(ROTATION_SPEED, state.turnDirection*state.cycles*TURN_CONSTANT);
+    driver.differentialSteer(ROTATION_SPEED, state.turnDirection*TURN_CONSTANT);
     state.currentState = States::WAIT;
     break;
 
@@ -164,6 +163,7 @@ void loop() {
     break;
   }
   #endif
+
   //  ~~Testing stuff~~
   #ifdef TEST_COLOUR_SENSORS
     // float r1, g1, b1, r2, g2, b2;

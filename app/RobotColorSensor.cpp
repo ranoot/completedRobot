@@ -74,7 +74,9 @@ HSB RobotColourSensor::RGBtoHSB(double red, double green, double blue)
     Serial.print(", S:"); Serial.print(out.saturation);
     Serial.print(", B:"); Serial.print(out.brightness); Serial.print("; ");
   #endif
-
+  // Serial.print("H:"); Serial.print(out.hue); 
+  // Serial.print(", S:"); Serial.print(out.saturation);
+  // Serial.print(", B:"); Serial.print(out.brightness); Serial.print("; ");
   return out;
 }
 
@@ -91,7 +93,7 @@ bool RobotColourSensor::isGreen(float r, float g, float b)
 	auto HSBvalue = RGBtoHSB(r, g, b);
 
   if (HSBvalue.hue < 70 || HSBvalue.hue > 150) return false; // return false if out of bounds
-  if (HSBvalue.saturation < 0.10 || HSBvalue.saturation > 0.42) return false;
+  if (HSBvalue.saturation < 0.10 || HSBvalue.saturation > 0.6) return false;
   if (HSBvalue.brightness < 50.65 || HSBvalue.brightness > 118.1) return false;
 
 	return true;
@@ -101,13 +103,26 @@ Turn RobotColourSensor::getTurn() {
   float r1, g1, b1, r2, g2, b2;
   
   tcaselect(0);
-  tcs.getRGB(&r1, &g1, &b1);
+  tcs.getRGB(&r1, &g1, &b1); // Obtain both readings first to reduce delay between both readings
 
   tcaselect(1);
   tcs.getRGB(&r2, &g2, &b2);
 
+  #ifdef TEST_COLOUR_SENSORS
+    Serial.print("Left: ");
+  #endif
   bool leftColourSensor = colourSensor.isGreen(r2, g2, b2);
+  #ifdef TEST_COLOUR_SENSORS
+    Serial.println(leftColourSensor);
+  #endif
+
+  #ifdef TEST_COLOUR_SENSORS
+    Serial.print("Right: ");
+  #endif
   bool rightColourSensor = colourSensor.isGreen(r1, g1, b1);
+  #ifdef TEST_COLOUR_SENSORS
+    Serial.println(rightColourSensor);
+  #endif
 
   if (!leftColourSensor && !rightColourSensor) return Turn::NONE;
   if (!leftColourSensor) {
