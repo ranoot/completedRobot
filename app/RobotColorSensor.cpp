@@ -74,9 +74,7 @@ HSB RobotColourSensor::RGBtoHSB(double red, double green, double blue)
     Serial.print(", S:"); Serial.print(out.saturation);
     Serial.print(", B:"); Serial.print(out.brightness); Serial.print("; ");
   #endif
-  // Serial.print("H:"); Serial.print(out.hue); 
-  // Serial.print(", S:"); Serial.print(out.saturation);
-  // Serial.print(", B:"); Serial.print(out.brightness); Serial.print("; ");
+
   return out;
 }
 
