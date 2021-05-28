@@ -23,20 +23,22 @@ void LineTrack::operator()(double* sensors) {
   for (int i = 0, sensorID = -3; i < 7; i++, sensorID++) {
     // Serial.print(sensorID);
     // Serial.print(": ");
-    // Serial.print(sensorReading);
+    // Serial.print(sensors[i]);
     // Serial.print(" ");
     error += sensorID * sensors[i];
   }
+
+  Serial.println();
   
   if (error > maxError) maxError = error; // Calculate maximum rotation on the go
   
   
   if (lowestIndex == 0) {
     error = -maxError;
-    //Serial.println("minleft");
+    // Serial.println("minleft");
   } else if (lowestIndex == 6) {
     error = maxError;
-    //Serial.println("minright");
+    // Serial.println("minright");
   }
 
   double rotation{(error * KP) + ((error - lastError) * KD)};
@@ -48,7 +50,7 @@ void LineTrack::operator()(double* sensors) {
  
   lastError = error;
 
-  // Serial.print(error);
-  // Serial.print("->");
-  // Serial.println(rotation);
+  //  Serial.print(error);
+  //  Serial.print("->");
+  //  Serial.println(rotation);
 };

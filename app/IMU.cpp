@@ -59,3 +59,14 @@ Gyroscope::gyroStates Gyroscope::currentState()
 {
   return currentState_;
 }
+
+void Gyroscope::turnTo(int angle){
+  gyroFSM();
+  if (currentState() == NOT_READING) return;
+  int anglenow = read();
+  while (anglenow != angle){
+    Serial.println(anglenow);
+     driver.differentialSteer(0.2, 1);
+     anglenow = read();
+  }
+}

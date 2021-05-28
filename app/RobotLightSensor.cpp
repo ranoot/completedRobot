@@ -8,6 +8,7 @@ void RobotLightSensor::init()
     driver.differentialSteer((i%2 ? 1 : -1) * CALIBRATION_MOTOR_SPEED, 0);
     for(int i = 0; i < 700; i++) {
       calibrate();
+      // Serial.println(i);
     }
   }
 
@@ -51,6 +52,8 @@ void RobotLightSensor::updateReading()
     if (reading > 1) reading = 1;
     if (reading < 0) reading = 0;
     currentReading_[i] = reading;
+    // Serial.print(currentReading_[i]);
+    // Serial.print(" ");
   }
 }
 
@@ -61,26 +64,33 @@ double* RobotLightSensor::currentReading()
 
 bool RobotLightSensor::isAllBlack() 
 {
-  bool val = true;
   for (int i = 0; i < 7; i++)
   {
     if (currentReading_[i] < BLACK_THRESHOLD) {
-      val = false;
-      break;
+      return false;
     }
   }
-  return val;
+  return true;
 }
 
 bool RobotLightSensor::isAllWhite() 
 {
-  bool val = true;
   for (int i = 0; i < 7; i++)
   {
     if (currentReading_[i] > BLACK_THRESHOLD) {
-      val = false;
-      break;
+      return false;
     }
   }
-  return val;
+  return true;
+}
+
+bool RobotLightSensor::onTrack()
+{
+  for (int i = 0; i < 7; i++)
+  {
+    if (currentReading_[i] > BLACK_THRESHOLD) {
+      return true;
+    }
+  }
+  return false;
 }

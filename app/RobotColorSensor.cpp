@@ -1,5 +1,4 @@
 #include "RobotLibrary.h"
-#define TCAADDR 0x70
 
 void tcaselect(uint8_t i) 
 {
@@ -36,6 +35,14 @@ void RobotColourSensor::init()
   	Serial.println("TCS34725 (2) not found");
   	// while (1);
 	}
+ 
+  tcaselect(2);
+  if (tcs.begin()) {
+    Serial.println("Found sensor");
+  } else {
+    Serial.println("TCS34725 (2) not found");
+    // while (1);
+  }
 }
 
 HSB RobotColourSensor::RGBtoHSB(double red, double green, double blue)
@@ -78,49 +85,45 @@ HSB RobotColourSensor::RGBtoHSB(double red, double green, double blue)
   return out;
 }
 
-bool RobotColourSensor::isGreen(float r, float g, float b)
-{
-	// if (sensorAddr > 1) {
-	// 	Serial.println("Colour sensor selected out of range");
-	// 	while(1);
-	// };
-	// float r, g, b;
-	// tcaselect(sensorAddr);
-	// tcs.getRGB(&r, &g, &b);
-  
-	auto HSBvalue = RGBtoHSB(r, g, b);
+// bool RobotColourSensor::isColour(double color[2][3], uint8_t chosenSensor){
+//   float r, g, b;
+//   tcaselect(chosenSensor);
+//   tcs.getRGB(&r, &g, &b);
+//   auto HSBvalue = RGBtoHSB(r, g, b);
 
-  if (HSBvalue.hue < 70 || HSBvalue.hue > 150) return false; // return false if out of bounds
-  if (HSBvalue.saturation < 0.10 || HSBvalue.saturation > 0.6) return false;
-  if (HSBvalue.brightness < 50.65 || HSBvalue.brightness > 118.1) return false;
+//   if (HSBvalue.hue < color[0][0] || HSBvalue.hue > color[1][0]) return false; // return false if out of bounds
+//   if (HSBvalue.saturation < color[0][1] || HSBvalue.saturation > color[1][1]) return false;
+//   if (HSBvalue.brightness < color[0][2] || HSBvalue.brightness > color[1][2]) return false;
 
-	return true;
+//   return true;
+// }
+
+bool RobotColourSensor::isColour(ColoursProperty c, uint8_t chosenSensor){
+  float r, g, b;
+  tcaselect(chosenSensor);
+  tcs.getRGB(&r, &g, &b);
+  auto HSBvalue = RGBtoHSB(r, g, b);
+
+  if (HSBvalue.hue < c.minHSB.hue || HSBvalue.hue > c.maxHSB.hue) return false; // return false if out of bounds
+  if (HSBvalue.saturation < c.minHSB.saturation || HSBvalue.saturation > c.maxHSB.saturation) return false;
+  if (HSBvalue.brightness < c.minHSB.brightness || HSBvalue.brightness > c.maxHSB.brightness) return false;
+
+  return true;
 }
 
 Turn RobotColourSensor::getTurn() {
   float r1, g1, b1, r2, g2, b2;
+  bool leftColourSensor = false, rightColourSensor = false;
   
-  tcaselect(0);
-  tcs.getRGB(&r1, &g1, &b1); // Obtain both readings first to reduce delay between both readings
-
-  tcaselect(1);
-  tcs.getRGB(&r2, &g2, &b2);
-
-  #ifdef TEST_COLOUR_SENSORS
-    Serial.print("Left: ");
-  #endif
-  bool leftColourSensor = colourSensor.isGreen(r2, g2, b2);
-  #ifdef TEST_COLOUR_SENSORS
-    Serial.println(leftColourSensor);
-  #endif
-
-  #ifdef TEST_COLOUR_SENSORS
-    Serial.print("Right: ");
-  #endif
-  bool rightColourSensor = colourSensor.isGreen(r1, g1, b1);
-  #ifdef TEST_COLOUR_SENSORS
-    Serial.println(rightColourSensor);
-  #endif
+  for (int i = 0; i < 4; i ++){
+      driver.differentialSteer(motorSpeed, (i%2 ? 1 : -1));
+      for (int n = 0; n < 1; n ++){
+//        Serial.print("getting turn: ");
+//        Serial.println(n);
+        if(colourSensor.isColour(Green, colourSensor_Left)) leftColourSensor = true;
+        if(colourSensor.isColour(Green, colourSensor_Right)) rightColourSensor = true;
+      }
+  }
 
   if (!leftColourSensor && !rightColourSensor) return Turn::NONE;
   if (!leftColourSensor) {
@@ -130,4 +133,10 @@ Turn RobotColourSensor::getTurn() {
   } else {
     return Turn::U_TURN;
   }
+}
+
+BallType checkBall(){
+  if (colourSensor.isColour(White, colourSensor_Middle))return BallType::WhiteB;
+  if (colourSensor.isColour(Orange, colourSensor_Middle))return BallType::OrangeB;
+  return BallType::NoB;
 }
