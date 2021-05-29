@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2021-05-29T14:36:11.909Z" agent="5.0 (Windows)" etag="a-IImPVtMa8Orlht10FC" version="14.6.13" type="github">
+<mxfile host="app.diagrams.net" modified="2021-05-29T14:40:54.594Z" agent="5.0 (Windows)" etag="YxEJkwaAh33XzMDu6N2o" version="14.6.13" type="github">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
-    <mxGraphModel dx="1221" dy="644" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="4681" math="0" shadow="0">
+    <mxGraphModel dx="4521" dy="644" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="4681" math="0" shadow="0">
       <root>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
@@ -152,7 +152,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="eaZtA1_Wp9ETqkBVhyNv-0" value="TURN ANTI-CLOCKWISE" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fontFamily=Open Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DOpen%2BSans;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="160" y="160" width="120" height="40" as="geometry" />
+          <mxGeometry x="10" y="140" width="120" height="40" as="geometry" />
         </mxCell>
         <mxCell id="eaZtA1_Wp9ETqkBVhyNv-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="eaZtA1_Wp9ETqkBVhyNv-2" target="WIyWlLk6GJQsqaUBKTNV-7">
           <mxGeometry relative="1" as="geometry">
@@ -166,28 +166,28 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="eaZtA1_Wp9ETqkBVhyNv-2" value="FORWARD" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fontFamily=Open Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DOpen%2BSans;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="160" y="280" width="120" height="40" as="geometry" />
+          <mxGeometry x="10" y="260" width="120" height="40" as="geometry" />
         </mxCell>
         <mxCell id="eaZtA1_Wp9ETqkBVhyNv-4" value="&lt;div&gt;side ToF detects obstacle&lt;/div&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="140" y="215" width="80" height="50" as="geometry" />
+          <mxGeometry x="-10" y="195" width="80" height="50" as="geometry" />
         </mxCell>
         <mxCell id="eaZtA1_Wp9ETqkBVhyNv-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="eaZtA1_Wp9ETqkBVhyNv-5" target="eaZtA1_Wp9ETqkBVhyNv-2">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="eaZtA1_Wp9ETqkBVhyNv-5" value="TURN CLOCKWISE" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;glass=0;strokeWidth=1;shadow=0;fontFamily=Open Sans;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DOpen%2BSans;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="160" y="400" width="120" height="40" as="geometry" />
+          <mxGeometry x="10" y="380" width="120" height="40" as="geometry" />
         </mxCell>
         <mxCell id="eaZtA1_Wp9ETqkBVhyNv-17" value="black line detected" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="300" y="190" width="110" height="20" as="geometry" />
+          <mxGeometry x="160" y="140" width="110" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="eaZtA1_Wp9ETqkBVhyNv-19" value="distance &amp;lt; 7cm" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="260" y="340" width="40" height="40" as="geometry" />
+        <mxCell id="eaZtA1_Wp9ETqkBVhyNv-19" value="distance &amp;lt; 10cm" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="110" y="320" width="60" height="40" as="geometry" />
         </mxCell>
         <mxCell id="eaZtA1_Wp9ETqkBVhyNv-21" value="obstacle detected" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="520" y="150" width="90" height="30" as="geometry" />
+          <mxGeometry x="160" y="290" width="90" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="eaZtA1_Wp9ETqkBVhyNv-22" value="distance &amp;gt; 7cm" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="120" y="335" width="50" height="50" as="geometry" />
+        <mxCell id="eaZtA1_Wp9ETqkBVhyNv-22" value="distance &amp;gt; 10cm" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="-30" y="315" width="50" height="50" as="geometry" />
         </mxCell>
         <mxCell id="eaZtA1_Wp9ETqkBVhyNv-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="eaZtA1_Wp9ETqkBVhyNv-24" target="WIyWlLk6GJQsqaUBKTNV-7">
           <mxGeometry relative="1" as="geometry">
