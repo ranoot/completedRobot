@@ -1,6 +1,6 @@
-<mxfile host="app.diagrams.net" modified="2021-05-31T04:34:35.298Z" agent="5.0 (Windows)" etag="AN8E18Uog81KxRZrIiP-" version="14.6.13" type="github">
+<mxfile host="app.diagrams.net" modified="2021-05-31T04:34:59.741Z" agent="5.0 (Windows)" etag="_etPo3NnZ2YemeBEHAyu" version="14.6.13" type="github">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
-    <mxGraphModel dx="1730" dy="912" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="4681" math="0" shadow="0">
+    <mxGraphModel dx="1221" dy="644" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="4681" math="0" shadow="0">
       <root>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
@@ -355,7 +355,7 @@
         <mxCell id="CvDCV1xbDjMuO8IATj5_-17" value="colour sensor detects green or blue" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
           <mxGeometry x="2100" y="180" width="200" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="CvDCV1xbDjMuO8IATj5_-18" value="Vertical Container" style="swimlane;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+        <mxCell id="CvDCV1xbDjMuO8IATj5_-18" value="Evacuation Zone " style="swimlane;startSize=50;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
           <mxGeometry x="1410" y="50" width="1220" height="820" as="geometry" />
         </mxCell>
       </root>
