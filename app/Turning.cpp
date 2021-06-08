@@ -9,13 +9,15 @@ void turnTo(double angle)
  double reading;
  double difference;
  do {
-   reading = gyro.read();
-   difference = (int)(angle+360-reading)%360;
-   if (difference>180){
-     driver.differentialSteer(motorSpeed-0.02, -1);
-   }
-   else{
-     driver.differentialSteer(motorSpeed-0.02, 1);
+   if (gyro.dataReady()) {
+    reading = gyro.read();
+    difference = (int)(angle+360-reading)%360;
+    if (difference>180){
+      driver.differentialSteer(ROTATION_SPEED, -1);
+    }
+    else{
+      driver.differentialSteer(ROTATION_SPEED, 1);
+    }
    }
 //    Serial.println(gyro.read());
  } while (difference != 0);

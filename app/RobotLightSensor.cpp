@@ -52,8 +52,6 @@ void RobotLightSensor::updateReading()
     if (reading > 1) reading = 1;
     if (reading < 0) reading = 0;
     currentReading_[i] = reading;
-    // Serial.print(currentReading_[i]);
-    // Serial.print(" ");
   }
 }
 
@@ -93,4 +91,25 @@ bool RobotLightSensor::onTrack()
     }
   }
   return false;
+}
+
+int RobotLightSensor::halfBlack()
+{
+  int count = 0;
+  for (int i = 0; i < 4; i++)
+  {
+    if (currentReading_[i] > BLACK_THRESHOLD) {
+      count += 1;
+    }
+  }
+  if (count == 4) return 1;
+  count = 0;
+  for (int i = 3; i < 7; i++)
+  {
+    if (currentReading_[i] > BLACK_THRESHOLD) {
+      count += 1;
+    }
+  }
+  if (count == 4) return 2;
+  return 0;
 }

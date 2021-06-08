@@ -1,4 +1,8 @@
 #include "RobotLibrary.h"
+// #include <algorithm>
+//TODO: pause loop with button
+//TODO: Servo methods => LDR methods
+//TODO: Pickup 
 
 RobotDriver driver;
 RobotColourSensor colourSensor;
@@ -7,33 +11,33 @@ Gyroscope gyro;
 LineTrack PID;
 Servos servo;
 ToF tof;
+LDR ldr;
 
 void setup()
 {
   Serial.begin(9600);
-  IMU_SERIAL.begin(9600);
+  gyro.init();
   driver.init();
   colourSensor.init();
 	lightSensor.init();
   servo.init();
   tof.initial();
-  state.currentmode = Modes::LINE;
   
   #if defined(TEST_RIGHT_ANGLE_TURN)
-    state.currentState = States::INITIAL_TURN;
-    state.turnDirection = 1;
-    state.cycles = 1;
+    preEvacState.currentState = PreEvacStates::INITIAL_TURN;
+    preEvacState.turnDirection = 1;
+    preEvacState.cycles = 1;
   #endif
 
   #if defined(TEST_U_TURN)
-    state.currentState = States::INITIAL_TURN;
-    state.turnDirection = 1;
-    state.cycles = 2;
+    preEvacState.currentState = PreEvacStates::INITIAL_TURN;
+    preEvacState.turnDirection = 1;
+    preEvacState.cycles = 2;
   #endif
 
-  #if !(defined(TEST_180_TURN) || defined(TEST_RIGHT_ANGLE_TURN))
-    state.currentState = States::RESET;
-  #endif
+  // #if !(defined(TEST_180_TURN) || defined(TEST_RIGHT_ANGLE_TURN))
+  //   currentState = PreEvacStates::RESET;
+  // #endif
   
   #if defined(TEST)
   //random code
@@ -45,139 +49,65 @@ void setup()
 void loop() {
   // //gyro.gyroFSM();
   lightSensor.updateReading();
+  // if (gyro.dataReady()) Serial.println(gyro.read());
+  // if (IMU_SERIAL.available()) Serial.println(IMU_SERIAL.read());
   #if !(defined(TEST_LINE_TRACK) || defined(TEST_LIGHT_SENSOR) || defined(TEST_COLOUR_SENSORS) || defined(TEST_MOTORS)|| defined(TEST))
-  switch (state.currentState)
-  {
-  case States::RESET:
-    state.currentState = States::LINE_TRACK;
-    break;
+  // if (preEvacState.currentmode == Modes::LINE){
+  // #ifdef  PRINT_STATE
+  // preEvacFSM.printState();
+  // #endif
+  preEvacFSM.run();
+  // }else if (preEvacState.currentmode == Modes::ZONE){
+  //   switch (evacState.zLoopCount)
+  //   {
+  //   case 1:
+  //   // driver.differentialSteer(0.2, 0);
+  //   // delay(500);
+  //   // driver.differentialSteer(0.2, 1);
+  //   // delay(Turn90);
+  //   // evacState.zLoopCount = 1;
+  //     break;
+    
+  //   case 0://pickup and go straight;
+  //   if(servo.checkKit()){
+  //     driver.differentialSteer(-0.5,0);
+  //     delay(80);
+  //     servo.grabB();
+  //     servo.sort(colourSensor.checkBall());
+  //   }else if (colourSensor.isColour(Green, colourSensor_Left)){
+  //     preEvacState.currentmode = Modes::LINE;
+  //   }else if (tof.obstacle(ToF_FRONT, 200)){
+  //     evacState.zLoopCount = 2;
+  //   }else{
+  //     driver.differentialSteer(0.15, 0);
+  //   }
+  //   break;
 
-  case States::LINE_TRACK:
-    {
-      #ifdef PRINT_STATE 
-        Serial.println("LINE TRACKING"); 
-      #endif
-      PID(lightSensor.currentReading());
-      if (servo.checkKit()){
-        state.currentState = States::PICKING_UP;
-      }else if (lightSensor.isAllBlack()) {
-        state.currentState = States::READ_COLOUR_SENSORS;
-      }else if (tof.obstacle(ToF_FRONT)){
-        Serial.println(tof.getDistance(ToF_FRONT));
-        while (!tof.obstacle(ToF_SIDE)){
-          driver.differentialSteer(0.20, -1);
-        }
-        state.currentState = States::AVOIDING_OB;
-      }else if (lightSensor.isAllWhite()) {
-        state.currentState = States::INITIAL_FORWARD;
-      }
-    }
-    break;
+  //   case 2://depo
+  //   while(!tof.obstacle(ToF_FRONT, 130)) driver.differentialSteer(0.13, 0);
+  //   driver.differentialSteer(0.3, 1);
+  //   delay(1900);
+  //   driver.differentialSteer(-0.15, 0);
+  //   delay(500);
+  //   driver.differentialSteer(0, 0);
+  //   servo.openDoor();
+  //   Serial.println("finished Open door");
+  //   evacState.zLoopCount = 0;
+  // }
 
-  case States::READ_COLOUR_SENSORS:
-    {
-      #ifdef PRINT_STATE 
-        Serial.println("READING COLOUR SENSORS"); 
-      #endif
-      Turn turnType = colourSensor.getTurn();
-      #ifdef PRINT_TURN
-        printTurn(turnType);
-      #endif
-      switch (turnType) {
-        case Turn::RIGHT:
-          state.turnDirection = 1;
-          state.cycles = 1;
-          break;
-        case Turn::LEFT:
-          state.turnDirection = -1;
-          state.cycles = 1;
-          break;
-        case Turn::U_TURN:
-          state.turnDirection = 1;
-          state.cycles = 2;
-          break;
-        case Turn::NONE:
-          state.turnDirection = 0;
-          state.cycles = 0;
-          break;
-      }
-
-      if (state.turnDirection && state.cycles) {
-        state.currentState = States::INITIAL_TURN;
-      } else /*if (!lightSensor.isAllBlack())*/ {
-        driver.differentialSteer(0.2, 0);
-        delay(100);
-        state.currentState = States::LINE_TRACK;
-      }
-    }
-    break;
-
-  case States::INITIAL_TURN:
-  {
-    #ifdef PRINT_STATE 
-      Serial.println("INITIAL TURN"); 
-    #endif
-    driver.differentialSteer(ROTATION_SPEED, state.turnDirection*state.cycles*TURN_CONSTANT);
-    delay(TURN_DURATION);
-    while(!lightSensor.onTrack())  lightSensor.updateReading();
-    state.cycles --;
-    if (state.cycles == 0) {
-      state.turnDirection = 0;
-      state.currentState = States::LINE_TRACK;
-    }
-  }
-  break;
-
-  case States::INITIAL_FORWARD:
-  {
-      #ifdef PRINT_STATE 
-        Serial.println("INITIL FORWARD"); 
-      #endif
-    driver.differentialSteer(motorSpeed, 0);
-    delay(FORWARD_DURATION);
-    while(!lightSensor.onTrack()) lightSensor.updateReading();
-    state.currentState = States::LINE_TRACK;
-  }
-  break;
-
-  case States::PICKING_UP:
-  {
-      #ifdef PRINT_STATE 
-        Serial.println("PICKING UP"); 
-      #endif
-    driver.differentialSteer(-0.2, 0);
-    delay(grabDelay);
-    servo.grab();
-    state.currentState = States::LINE_TRACK;
-  }
-  break;
-
-  case States::AVOIDING_OB:
-  {
-      #ifdef PRINT_STATE 
-        Serial.println("AVOIDING OBSTACLES"); 
-      #endif
-    if (lightSensor.onTrack()){
-      driver.differentialSteer(0.2, -1);
-      delay(TURN_DURATION*0.5);
-      while(!lightSensor.onTrack())lightSensor.updateReading();
-      state.currentState = States::LINE_TRACK;
-      break;
-    }
-    // driver.differentialSteer(0.2, tof.distancePID());
-    driver.differentialSteer(0.2, 0.36);
-  }
-  break;
-
-  default:
-    Serial.println("no match");
-    break;
-  }
+  // while(tof.obstacle(ToF_FRONT, 100) && tof.obstacle(ToF_SIDE, 100)){
+  //   driver.differentialSteer(0,0);
+  // }
+  // }// stop button. Used in normal line track, avoiding ob and aimless forward in zone.
   #endif
 
   //  ~~Testing stuff~~
   #ifdef TEST_COLOUR_SENSORS
-    Serial.println(colourSensor.isColour(Green, colourSensor_Left));
+    Serial.print("white:");
+    Serial.println(colourSensor.isColour(White, colourSensor_Right));
+    Serial.print("orange:");
+    Serial.println(colourSensor.isColour(Orange, colourSensor_Left));
+    Serial.println(tof.getDistance(ToF_FRONT));
   #endif
 
   #ifdef TEST_LIGHT_SENSOR
@@ -195,16 +125,49 @@ void loop() {
   #endif
 
   #ifdef TEST_MOTORS
-    driver.differentialSteer(1, 0.5);
-    delay(3000);
-    driver.differentialSteer(1, -0.5);
-    delay(3000);
-    driver.differentialSteer(1, -0);
-    delay(1000);
+    driver.differentialSteer(0.19, 0);
+    delay(5000);
+    driver.differentialSteer(0, 0);
+    driver.halt();
+    delay(5000);
+    driver.differentialSteer(0.19, 0);
   #endif
 
   #ifdef TEST
-  Serial.println(tof.getDistance(ToF_FRONT));
+  // if (driver.newSpeed == 0.5){
+  //   driver.differentialSteer(0.5, 0);
+  //   delay(1500);
+  //   driver.differentialSteer(-1, 0);
+  //   delay(10);
+  //   driver.differentialSteer(0,0);
+  //   delay(500);
+  //   driver.differentialSteer(0.2, 1);
+  //   delay(1900);
+  //   while(!lightSensor.isAllWhite()){
+  //     PID(lightSensor.currentReading());
+  //     lightSensor.updateReading();
+  //   }
+  //   driver.differentialSteer(0,0);
+  //   delay(5000);
+  // int i = 0;
+  // if(i == 1){
+  //   Serial.println("last");
+  //   servo.openDoor();
+  // }
+  // else if(tof.obstacle(ToF_FRONT, 100)){
+  //   driver.differentialSteer(0.2, 1);
+  //   delay(1900);
+  //   i = 1;
+  //   Serial.println("second");
+  // }else{
+  //   driver.differentialSteer(0.13, 0);
+  // }
+    while(!tof.obstacle(ToF_FRONT, 120)) driver.differentialSteer(0.13, 0);
+    driver.differentialSteer(0.2, 1);
+    delay(1650);
+    driver.differentialSteer(-0.13, 0);
+    delay(900);
+    driver.differentialSteer(0, 0);
+    servo.openDoor();
   #endif
-
 }

@@ -2,6 +2,8 @@
 #ifndef ROBOTLIBRARY_H
 #define ROBOTLIBRARY_H
 
+inline const double motorSpeed = 0.24; //0.22
+
 #define TCAADDR 0x70
 #define LDR_PIN A15
 #define ToF_FRONT 4
@@ -10,21 +12,22 @@
 #define colourSensor_Right 0
 #define colourSensor_Middle 2
 
-#define KP 0.23 //0.0008 with speed 0.25
-#define KD 4//12
+#define KP 0.32 //0.0008 with speed 0.25
+#define KD 12
  //0.05, 0.019
-#define motorSpeed 0.22 //0.22
 #define CALIBRATION_MOTOR_SPEED 0.2
-#define ROTATION_SPEED 0.23
+#define ROTATION_SPEED 0.23//0.23
 #define IMU_BAUD_RATE 9600
 
+#define OBSTACLE_DISTANCE 100 // Distance to be mantained between object and robot
+
 #define BLACK_THRESHOLD 0.5
-#define TURN_DURATION 900
+#define TURN_DURATION 600//900
 #define TURN_CONSTANT 0.87
-#define FORWARD_DURATION 400
-#define FORWARD_SUS 10
-#define grabDelay 100 // to be checked
-#define DISTANCE_THRESHOLD 120
+#define FORWARD_DURATION 650
+#define grabDelay 250 // checked
+#define DISTANCE_THRESHOLD 50
+#define Turn90 950
 
 // ~ evac state constants ~
 #define FIXED_FORWARD_DURATION 5000 // change this!!!
@@ -33,8 +36,8 @@
 #define REVERSE_DURATION 500
 
 // ~ testing switches ~
-#define PRINT_STATE
-#define PRINT_TURN
+//  #define PRINT_STATE
+// #define PRINT_TURN
 // #define TEST_COLOUR_SENSORS
 // #define TEST_LIGHT_SENSOR
 // #define TEST_LINE_TRACK
@@ -47,61 +50,24 @@
 
 #include <Arduino.h>
 #include <DualVNH5019MotorShield.h>
-#include <Adafruit_TCS34725.h>
 #include <QTRSensors.h>
 #include "Wire.h"
 #include <SoftwareSerial.h>
 #include <Servo.h>
 #include <VL53L1X.h>
 
-inline const char* turnsStr[] = {"NONE", "RIGHT", "LEFT", "U_TURN"};
+#include "RobotColourSensor.h"
+#include "PreEvacuation.h"
+#include "Gyroscope.h"
+// inline int halfblack = 0;//1 left, 2 right
 
-enum class Turn {NONE, RIGHT, LEFT, U_TURN };
-
-enum class BallType {NoB, OrangeB, WhiteB};
-
-enum class States {
-  RESET, 
-  LINE_TRACK, 
-  READ_COLOUR_SENSORS, 
-  INITIAL_TURN,
-  INITIAL_FORWARD,
-  PICKING_UP,
-  AVOIDING_OB,
-  SWEEPING,
-  STOP,
-};
-
-enum class Modes {LINE, ZONE};
-
-inline struct State {
-  States currentState;
-  Modes currentmode;
-  // int currentState = 0;
-  unsigned long initialTime;
-  int turnDirection;
-  int cycles = 0;
-} state;
-
-struct HSB {
-	double hue;
-	double saturation;
-	double brightness;
-};
-
-struct ColoursProperty {
-  HSB minHSB;
-  HSB maxHSB;
-};
-
-inline ColoursProperty Green = {{70, 0.10, 50.65}, {150, 0.42, 118.1}};
-inline ColoursProperty White = {{80, 0.02, 80}, {160, 0.09, 90}};
-inline ColoursProperty Orange = {{10, 0.40, 100}, {20, 0.75, 130}};
-inline ColoursProperty Blue;// = {{10, 0.40, 100}, {20, 0.75, 130}}; need readings
+enum class Modes { PRE_EVACUATION, EVACUATION }; 
+inline Modes mode = Modes::PRE_EVACUATION;
 
 class RobotDriver {
     public:
         void differentialSteer(double speed, double rotation);
+        void halt();
         void init();
         DualVNH5019MotorShield& get_md();
     private:
@@ -117,6 +83,7 @@ class RobotLightSensor {
       void updateReading();
       double* currentReading();
       bool onTrack();
+      int halfBlack();
     private:
       void read(double* readingArray);
       void calibrate();
@@ -124,42 +91,6 @@ class RobotLightSensor {
       double minimumReadings[7];
       double maximumReadings[7];
       const uint8_t lightSensorPins[7] = {A8, A9, A10, A11, A12, A13, A14};
-};
-
-class RobotColourSensor {
-  public:
-    void init();
-    bool isColour(ColoursProperty c, uint8_t chosenSensor);
-    BallType checkBall();
-    HSB RGBtoHSB(double red, double green, double blue);
-    Turn getTurn();
-    Adafruit_TCS34725& getTcs();
-  private:
-    Adafruit_TCS34725 tcs;
-};
-
-class Gyroscope {
-  private:
-    enum gyroStates { START, READING, NOT_READING };
-    gyroStates currentState_;
-    double currentReading_;
-  public:
-    void init();
-    double read();
-    void gyroFSM();
-    double currentReading();
-    gyroStates currentState();
-    void turnTo(int angle);
-
-};
-
-class LineTrack {
-  private:
-    double maxError = 0;
-    double lastError = 0;
-  public:
-    void operator()(double* sensors);
-    void reset();
 };
 
 class Servos {
@@ -171,6 +102,7 @@ class Servos {
     bool checkKit();
     void clawUp();
     void clawDown();
+    void grabB();
   private:
     void LDRcalibrate();
     int LDR_THRESHOLD;
@@ -178,22 +110,31 @@ class Servos {
     int LDR_MIN;
 };
 
+class LDR {
+  public: 
+    void init();
+    bool checkKit;
+};
+
 class ToF {
   public:
-    bool obstacle(int sensorToF);
+    // if object within range of ToF
+    bool obstacle(int sensorToF, int threshold);
     void initial();
-    double distancePID();
     void avoidOb();
     int getDistance(int Sensor);
+    void resetObStage();
   private:
     VL53L1X sensor;
     double ToFscaling = 0.01;
     double target = 80;
+    int lastDistance;
+    int stage = 0;
+    int stage2 = 0;
 };
 
 void tcaselect(uint8_t i);
 void turnTo(double angle);
-void turn(double angle);
 void printTurn(Turn turn);
 
 // Evac stage constants
@@ -235,6 +176,7 @@ inline struct EvacState {
   // double initialAngle;
   int forwardDuration = FIXED_FORWARD_DURATION;
   unsigned long initialTime;
+  unsigned long currentTime;
   int startState = 0;
 } evacState;
 
@@ -244,6 +186,10 @@ void runEvacFSM();
 EvacStates switchDirection(EvacStates s);
 int getCurrentCorner();
 void runEvacFSM();
+void adjustPosition();
+bool see();
+
+void turn(double angle);
 
 inline SoftwareSerial IMU_SERIAL(53, 52); // RX, TX. the one closer to the power is tx
 extern RobotDriver driver;
@@ -253,5 +199,6 @@ extern Gyroscope gyro;
 extern LineTrack PID;
 extern Servos servo;
 extern ToF tof;
+extern LDR ldr;
 
 #endif

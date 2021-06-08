@@ -24,6 +24,12 @@ void RobotDriver::differentialSteer(double speed, double rotation)
   stopIfFault();
 }
 
+void RobotDriver::halt()
+{
+	differentialSteer(0,0);
+	md.setBrakes(400, 400);
+}
+
 void RobotDriver::stopIfFault()
 {
 	if (md.getM1Fault())

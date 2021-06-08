@@ -38,7 +38,6 @@ int getCurrentCorner() { // 1, 2, 3 or 4 (should only be called in pick-up state
     Assumption:
       Right -> Fixed Forward => position 4
       Left -> Forward => position 4
-
       Right -> Forward => position 1
       Left -> Fixed Forward => position 1
     */
@@ -55,9 +54,18 @@ int getCurrentCorner() { // 1, 2, 3 or 4 (should only be called in pick-up state
   }
 }
 
+// void turn(double angle){
+//   if (angle < 0) {
+//   driver.differentialSteer(0.2, -1);
+//   delay(-angle*11.8);
+//   }else{
+//   driver.differentialSteer(0.2, 1);
+//   delay(angle*11);
+//   }
+// }
+
 /*----------
   1       2
-
   4       3
   ----------*/
 //TODO: test for FIXED_FORWARD_DURATION, TOF detection, set initialAngle, turnby function
@@ -65,7 +73,7 @@ int getCurrentCorner() { // 1, 2, 3 or 4 (should only be called in pick-up state
 void runEvacFSM()
 {
   lightSensor.updateReading();
-  gyro.gyroFSM();
+  // gyro.gyroFSM();
 
   switch (evacState.currentState) 
   {
@@ -163,4 +171,23 @@ void runEvacFSM()
   //   }
   //   break;
   }
+}
+
+void adjustPosition(){
+  while (! (colourSensor.isColour(Red, colourSensor_Left) || colourSensor.isColour(Blue, colourSensor_Left) || colourSensor.isColour(Black, colourSensor_Left) || colourSensor.isColour(Green2, colourSensor_Left)|| colourSensor.isColour(Blue, colourSensor_Left))){
+    driver.differentialSteer(0.2, 0.5);
+  }
+  while (! (colourSensor.isColour(Red, colourSensor_Right) || colourSensor.isColour(Blue, colourSensor_Right) || colourSensor.isColour(Black, colourSensor_Right) || colourSensor.isColour(Green2, colourSensor_Right)|| colourSensor.isColour(Blue, colourSensor_Right))){
+    driver.differentialSteer(0.2, -0.5);
+  }
+}
+
+bool see(){
+  if(colourSensor.isColour(Red, colourSensor_Left) || colourSensor.isColour(Blue, colourSensor_Left) || colourSensor.isColour(Black, colourSensor_Left) || colourSensor.isColour(Green2, colourSensor_Left)|| colourSensor.isColour(Blue, colourSensor_Left)){
+    return true;
+  }
+  if(colourSensor.isColour(Red, colourSensor_Right) || colourSensor.isColour(Blue, colourSensor_Right) || colourSensor.isColour(Black, colourSensor_Right) || colourSensor.isColour(Green2, colourSensor_Right)|| colourSensor.isColour(Blue, colourSensor_Right)){
+    return true;
+  }
+  return false;
 }

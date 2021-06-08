@@ -17,45 +17,58 @@ void ToF::initial(){
   }
 }
 
-bool ToF::obstacle(int sensorToF){
+bool ToF::obstacle(int sensorToF, int threshold){
   tcaselect(sensorToF);
-  int distance = sensor.read();
-  // Serial.println(distance);
+  int distance;
+
   if (sensor.timeoutOccurred()) Serial.print("TIMEOUT");
-  if (distance < DISTANCE_THRESHOLD){
-//    Serial.println("found ob");
-//    delay(1000);
-    return true;
-  }else{
-    return false;
+  
+  for (int i = 0; i < 7; i ++){
+    distance = sensor.read(false);
+    // Serial.println(distance);
+    if (distance > threshold) return false;
   }
+  
+  return true;
 }
 
-double ToF::distancePID(){
-  tcaselect(ToF_SIDE);
-  int distance = sensor.read();
-  Serial.println(distance);
-  Serial.print("avoiding ");
-  double error = target - (double)distance;
-  double rotation = error*ToFscaling;
-  if(rotation < 0){
-    Serial.println(0);
-    return 0;
+void ToF::avoidOb()
+{
+  int distance;
+  lastDistance = 1000;
+  if(obstacle(ToF_SIDE, 300)){
+    driver.differentialSteer(0.2, 0);
+  } else {
+    while (stage == 0) {
+      distance = sensor.read();
+      if (distance < 300){
+        if (distance > lastDistance){
+          stage = 1;
+        }
+        lastDistance = distance;
+        driver.differentialSteer(0.2, 1);
+      }else{
+        driver.differentialSteer(0.2, 1);
+      }
+    }
   }
-  if(rotation > 0.5){
-    Serial.println(0.5);
-    return 0.5;
-  }
-  Serial.println(rotation);
-  return rotation;
-}
-
-void ToF::avoidOb(){
-  driver.differentialSteer(0.2, 0.3);
+  // if(){
+  //   if(tof.obstacle(ToF_SIDE, 300)&&stage2 == 0) driver.differentialSteer(0.2, 1);
+  //   if(!tof.obstacle(ToF_SIDE, 100)){
+  //     driver.differentialSteer(0.2, 0);
+  //     stage2 == 1;
+  //   }else stage = 0;
+  // }
 }
 
 int ToF::getDistance(int Sensor){
   tcaselect(Sensor);
-  int v = sensor.read();
+  int v = sensor.read(false);
   return v;
+}
+
+void ToF::resetObStage(){
+  stage = 0;
+  stage2 = 0;
+  preEvacFSM.countDownOb = 30;
 }

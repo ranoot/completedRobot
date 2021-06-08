@@ -27,8 +27,6 @@ void LineTrack::operator()(double* sensors) {
     // Serial.print(" ");
     error += sensorID * sensors[i];
   }
-
-  Serial.println();
   
   if (error > maxError) maxError = error; // Calculate maximum rotation on the go
   
@@ -41,7 +39,7 @@ void LineTrack::operator()(double* sensors) {
     // Serial.println("minright");
   }
 
-  double rotation{(error * KP) + ((error - lastError) * KD)};
+  double rotation{((error * KP) + ((error - lastError) * KD)) * maxValue};
   
   if (rotation > 1) rotation = 1; // limit rotation to between 1 and -1
   if (rotation < -1) rotation = -1; 
@@ -49,8 +47,4 @@ void LineTrack::operator()(double* sensors) {
   driver.differentialSteer(motorSpeed, rotation);
  
   lastError = error;
-
-  //  Serial.print(error);
-  //  Serial.print("->");
-  //  Serial.println(rotation);
 };

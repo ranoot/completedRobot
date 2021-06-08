@@ -10,9 +10,10 @@ void Servos::init(){
   servo1.write(100);//--to move inside(clock);50 to grab
   servo2.write(0);
   servo3.write(170);
-  servo4.write(0);
-  // for (int i = 0; i < 700; i++){
-  //   LDRcalibrate();
+  servo4.write(20);
+  for (int i = 0; i < 700; i++){
+    LDRcalibrate();
+  }
 }
 
 void Servos::grab(){
@@ -23,42 +24,37 @@ void Servos::grab(){
   delay(2000);
   servo3.write(170);
   delay(1500);
-  if (state.currentmode == Modes::LINE)
+  if (mode == Modes::PRE_EVACUATION)
   {
-    servo1.write(100);
     servo2.write(0);
     delay(2000);
+    servo1.write(100);
+    delay(100);
   }
   
 }
 
 void Servos::sort(BallType ball){
   if (ball == BallType::OrangeB){
-    servo1.write(50);
-    delay(2000);
-    servo1.write(100);
-    delay(100);
-  }
-  if (ball == BallType::WhiteB){
-    servo1.write(100);
-    delay(2000);
-    servo2.write(100);
-    delay(100);
-  }else{
     servo2.write(0);
+    delay(2000);
+    servo1.write(100);
+    delay(100);
+  }
+  else{
     servo1.write(100);
     delay(2000);
+    servo2.write(0);
+    delay(100);
   }
-  servo3.write(0);
-  delay(100);
 }
 
 void Servos::openDoor(){
-  // servo4.write(90);
-  servo2.write(100);
-  delay(1000);
-  servo1.write(100);
-  delay(1000);
+  servo4.write(0);
+  delay(5000);
+  servo4.write(40);
+  delay(5000);
+  servo4.write(20);
 }
 
 void Servos::LDRcalibrate(){
@@ -66,7 +62,7 @@ void Servos::LDRcalibrate(){
   if(LDR_MIN > brightness) LDR_MIN = brightness;
   if(LDR_MAX < brightness) LDR_MAX = brightness;
   LDR_THRESHOLD = (LDR_MIN + LDR_MAX)*0.5;
-  Serial.println(LDR_THRESHOLD);
+  // Serial.println(LDR_THRESHOLD);
 }
 
 bool Servos::checkKit(){
@@ -83,7 +79,7 @@ bool Servos::checkKit(){
 void Servos::clawUp() {
   servo3.write(170);
   delay(2000);
-  servo2.write(100);
+  servo2.write(0);
   servo1.write(100);
   delay(2000);
 }
@@ -91,7 +87,22 @@ void Servos::clawUp() {
 void Servos::clawDown() {
   servo3.write(0);
   delay(2000);
-  servo2.write(100);
+  servo2.write(0);
   servo1.write(100);
   delay(2000);
+}
+
+void Servos::grabB(){
+  driver.differentialSteer(-0, 0);
+  delay(50);
+  servo3.write(0);
+  // driver.differentialSteer(-0.5, 0);
+  // delay(50);
+  driver.differentialSteer(0, 0);
+  delay(950);
+  servo2.write(50);
+  servo1.write(50);
+  delay(2000); 
+  servo3.write(170);
+  delay(1500);
 }

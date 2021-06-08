@@ -98,7 +98,7 @@ HSB RobotColourSensor::RGBtoHSB(double red, double green, double blue)
 //   return true;
 // }
 
-bool RobotColourSensor::isColour(ColoursProperty c, uint8_t chosenSensor){
+bool RobotColourSensor::isColour(const ColoursProperty& c, uint8_t chosenSensor){
   float r, g, b;
   tcaselect(chosenSensor);
   tcs.getRGB(&r, &g, &b);
@@ -112,17 +112,11 @@ bool RobotColourSensor::isColour(ColoursProperty c, uint8_t chosenSensor){
 }
 
 Turn RobotColourSensor::getTurn() {
-  float r1, g1, b1, r2, g2, b2;
   bool leftColourSensor = false, rightColourSensor = false;
   
-  for (int i = 0; i < 4; i ++){
-      driver.differentialSteer(motorSpeed, (i%2 ? 1 : -1));
-      for (int n = 0; n < 1; n ++){
-//        Serial.print("getting turn: ");
-//        Serial.println(n);
-        if(colourSensor.isColour(Green, colourSensor_Left)) leftColourSensor = true;
-        if(colourSensor.isColour(Green, colourSensor_Right)) rightColourSensor = true;
-      }
+  for (int i = 0; (i < 5 && !(leftColourSensor && rightColourSensor)); i++) {
+    if(colourSensor.isColour(Green, colourSensor_Left)) leftColourSensor = true;
+    if(colourSensor.isColour(Green, colourSensor_Right)) rightColourSensor = true;
   }
 
   if (!leftColourSensor && !rightColourSensor) return Turn::NONE;
@@ -135,7 +129,7 @@ Turn RobotColourSensor::getTurn() {
   }
 }
 
-BallType checkBall(){
+BallType RobotColourSensor::checkBall(){
   if (colourSensor.isColour(White, colourSensor_Middle))return BallType::WhiteB;
   if (colourSensor.isColour(Orange, colourSensor_Middle))return BallType::OrangeB;
   return BallType::NoB;
