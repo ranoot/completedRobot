@@ -8,7 +8,7 @@ inline class PreEvacFSM {
     void READ_COLOUR_SENSORS(); // 3
     void READ_BLACK_LINE(); // 4
     void INITIAL_TURN(); // 5
-    // void INITIAL_FORWARD();
+    //// void INITIAL_FORWARD();
     void PICKUP(); // 6
     void WAIT(); // 7
 
@@ -17,13 +17,12 @@ inline class PreEvacFSM {
     int turnDirection;
     int cycles = 0;
 
-    //Obstacle avoidance
+    //* Obstacle avoidance
     void ORIENTATE();
     void FORWARD();
     void CLOCKWISE_TURN();
 
-    int countDownOb;//? what is this for
-    int countUpAl = 0;
+    int finalAngle = 0;
 
     void (PreEvacFSM::*nextState)(void);
 

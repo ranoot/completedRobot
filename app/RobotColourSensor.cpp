@@ -72,15 +72,15 @@ HSB RobotColourSensor::RGBtoHSB(double red, double green, double blue)
     out.hue = 60.00 * (4.00 + (red - green)/chroma);
   }
 
-  #ifdef TEST_COLOUR_SENSORS
-    Serial.print("R:"); Serial.print(red); 
-    Serial.print(", G:"); Serial.print(green);
-    Serial.print(", B:"); Serial.print(blue); Serial.print("; ");
+  // #ifdef TEST_COLOUR_SENSORS
+  //   Serial.print("R:"); Serial.print(red); 
+  //   Serial.print(", G:"); Serial.print(green);
+  //   Serial.print(", B:"); Serial.print(blue); Serial.print("; ");
 
-    Serial.print("H:"); Serial.print(out.hue); 
-    Serial.print(", S:"); Serial.print(out.saturation);
-    Serial.print(", B:"); Serial.print(out.brightness); Serial.print("; ");
-  #endif
+  //   Serial.print("H:"); Serial.print(out.hue); 
+  //   Serial.print(", S:"); Serial.print(out.saturation);
+  //   Serial.print(", B:"); Serial.print(out.brightness); Serial.print("; ");
+  // #endif
 
   return out;
 }
@@ -114,7 +114,7 @@ bool RobotColourSensor::isColour(const ColoursProperty& c, uint8_t chosenSensor)
 Turn RobotColourSensor::getTurn() {
   bool leftColourSensor = false, rightColourSensor = false;
   
-  for (int i = 0; (i < 5 && !(leftColourSensor && rightColourSensor)); i++) {
+  for (int i = 0; (i < 10 && !(leftColourSensor && rightColourSensor)); i++) {
     if(colourSensor.isColour(Green, colourSensor_Left)) leftColourSensor = true;
     if(colourSensor.isColour(Green, colourSensor_Right)) rightColourSensor = true;
   }
@@ -125,6 +125,7 @@ Turn RobotColourSensor::getTurn() {
   } else if (!rightColourSensor) {
     return Turn::LEFT;
   } else {
+    Serial.println("u");
     return Turn::U_TURN;
   }
 }
@@ -133,4 +134,29 @@ BallType RobotColourSensor::checkBall(){
   if (colourSensor.isColour(White, colourSensor_Middle))return BallType::WhiteB;
   if (colourSensor.isColour(Orange, colourSensor_Middle))return BallType::OrangeB;
   return BallType::NoB;
+}
+
+void RobotColourSensor::print(const int option, const uint8_t chosenSensor)
+{
+  float r, g, b;
+  tcaselect(chosenSensor);
+  tcs.getRGB(&r, &g, &b);
+  switch (option) {
+    case 0:
+      {
+        Serial.print("R:"); Serial.print(r); 
+        Serial.print(", G:"); Serial.print(g);
+        Serial.print(", B:"); Serial.print(b); Serial.print("; ");
+      }
+      break;
+
+    case 1:
+      {
+        HSB c = RGBtoHSB(r, g, b);
+        Serial.print("H:"); Serial.print(c.hue); 
+        Serial.print(", S:"); Serial.print(c.saturation);
+        Serial.print(", B:"); Serial.print(c.brightness); Serial.print("; ");
+      }
+      break;
+  }
 }

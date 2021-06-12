@@ -28,6 +28,7 @@ class RobotColourSensor {
   public:
     void init();
     bool isColour(const ColoursProperty& c, uint8_t chosenSensor);
+    void print(const int option, const uint8_t chosenSensor);
     BallType checkBall();
     HSB RGBtoHSB(double red, double green, double blue);
     Turn getTurn();

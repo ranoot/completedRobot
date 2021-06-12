@@ -33,12 +33,20 @@ void PreEvacFSM::LINE_TRACK()
     // Serial.println(tof.getDistance(ToF_FRONT));
   #endif
   PID(lightSensor.currentReading());
+  // int tofReading = tof.getDistance(ToF_FRONT);
+  // Serial.println(tofReading);
   if (lightSensor.isAllBlack()) {
     currentState = &PreEvacFSM::READ_COLOUR_SENSORS;
-  } else if (servo.checkKit()) { //TODO: check kit -> LDR obj
-    currentState = &PreEvacFSM::PICKUP;
-  } else if (tof.obstacle(ToF_FRONT, DISTANCE_THRESHOLD)){
-    currentState = &PreEvacFSM::ORIENTATE;
+  // } else if (ldr.checkKit()) {
+  //   Serial.println("p");
+  //   currentState = &PreEvacFSM::PICKUP;
+  // } else if (tofReading != -1){
+  //   if (tofReading < INITIAL_OBJECT_DISTANCE) {
+  //     Serial.println("t");
+  //     currentState = &PreEvacFSM::ORIENTATE;
+  //     driver.halt();
+  //     driver.differentialSteer(ROTATION_SPEED, -1);
+  //   }
   }
 }
 
@@ -91,7 +99,7 @@ void PreEvacFSM::READ_BLACK_LINE()
   #ifdef PRINT_STATE
     Serial.println("4");
   #endif
-  if (!lightSensor.isAllWhite()) {
+  if (lightSensor.currentReading()[3] > BLACK_THRESHOLD) {
     cycles--;
     if (cycles == 0) {
       turnDirection = 0;
@@ -107,7 +115,7 @@ void PreEvacFSM::INITIAL_TURN()
   #ifdef PRINT_STATE 
     Serial.println("5"); 
   #endif
-  driver.differentialSteer(ROTATION_SPEED, turnDirection*cycles*TURN_CONSTANT);
+  driver.differentialSteer(ROTATION_SPEED, turnDirection*TURN_CONSTANT);
   wait(TURN_DURATION, &PreEvacFSM::READ_BLACK_LINE);
   
 }

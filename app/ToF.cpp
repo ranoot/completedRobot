@@ -11,8 +11,8 @@ void ToF::initial(){
       Serial.println("Failed to detect and initialize sensor!");
       while (1);
     }
-    sensor.setDistanceMode(VL53L1X::Short);
-    sensor.setMeasurementTimingBudget(50000);
+    sensor.setDistanceMode(VL53L1X::Medium);
+    sensor.setMeasurementTimingBudget(33000);
     sensor.startContinuous(20);
   }
 }
@@ -32,43 +32,48 @@ bool ToF::obstacle(int sensorToF, int threshold){
   return true;
 }
 
-void ToF::avoidOb()
-{
-  int distance;
-  lastDistance = 1000;
-  if(obstacle(ToF_SIDE, 300)){
-    driver.differentialSteer(0.2, 0);
-  } else {
-    while (stage == 0) {
-      distance = sensor.read();
-      if (distance < 300){
-        if (distance > lastDistance){
-          stage = 1;
-        }
-        lastDistance = distance;
-        driver.differentialSteer(0.2, 1);
-      }else{
-        driver.differentialSteer(0.2, 1);
-      }
-    }
-  }
-  // if(){
-  //   if(tof.obstacle(ToF_SIDE, 300)&&stage2 == 0) driver.differentialSteer(0.2, 1);
-  //   if(!tof.obstacle(ToF_SIDE, 100)){
-  //     driver.differentialSteer(0.2, 0);
-  //     stage2 == 1;
-  //   }else stage = 0;
-  // }
-}
+// void ToF::avoidOb()
+// {
+//   int distance;
+//   lastDistance = 1000;
+//   if(obstacle(ToF_SIDE, 300)){
+//     driver.differentialSteer(0.2, 0);
+//   } else {
+//     while (stage == 0) {
+//       distance = sensor.read();
+//       if (distance < 300){
+//         if (distance > lastDistance){
+//           stage = 1;
+//         }
+//         lastDistance = distance;
+//         driver.differentialSteer(0.2, 1);
+//       }else{
+//         driver.differentialSteer(0.2, 1);
+//       }
+//     }
+//   }
+// if(){
+//   if(tof.obstacle(ToF_SIDE, 300)&&stage2 == 0) driver.differentialSteer(0.2, 1);
+//   if(!tof.obstacle(ToF_SIDE, 100)){
+//     driver.differentialSteer(0.2, 0);
+//     stage2 == 1;
+//   }else stage = 0;
+// }
+// }
 
+// * Returns -1 if data is not ready
 int ToF::getDistance(int Sensor){
   tcaselect(Sensor);
-  int v = sensor.read(false);
+
+  if (sensor.timeoutOccurred()) Serial.print("TIMEOUT");
+  
+  int v = -1;
+  if (sensor.dataReady()) v = sensor.read(false);
   return v;
 }
 
-void ToF::resetObStage(){
-  stage = 0;
-  stage2 = 0;
-  preEvacFSM.countDownOb = 30;
-}
+// void ToF::resetObStage(){
+//   stage = 0;
+//   stage2 = 0;
+//   preEvacFSM.countDownOb = 30;
+// }

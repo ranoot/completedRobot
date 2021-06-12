@@ -1,7 +1,6 @@
 #include "RobotLibrary.h"
 // #include <algorithm>
 //TODO: pause loop with button
-//TODO: Servo methods => LDR methods
 //TODO: Pickup 
 
 RobotDriver driver;
@@ -19,8 +18,11 @@ void setup()
   gyro.init();
   driver.init();
   colourSensor.init();
-	lightSensor.init();
+	// lightSensor.init();
   servo.init();
+  delay(2000);
+  Serial.println("Calibrate LDR!");
+  ldr.init();
   tof.initial();
   
   #if defined(TEST_RIGHT_ANGLE_TURN)
@@ -38,12 +40,14 @@ void setup()
   // #if !(defined(TEST_180_TURN) || defined(TEST_RIGHT_ANGLE_TURN))
   //   currentState = PreEvacStates::RESET;
   // #endif
-  
+  // IMU_SERIAL.write("#oc");
+  // IMU_SERIAL.write("#on");
   #if defined(TEST)
   //random code
   #endif
-
+  pinMode(A13, INPUT);
   Serial.println("end setting");
+  initialTime = millis();
 }
 
 void loop() {
@@ -52,11 +56,16 @@ void loop() {
   // if (gyro.dataReady()) Serial.println(gyro.read());
   // if (IMU_SERIAL.available()) Serial.println(IMU_SERIAL.read());
   #if !(defined(TEST_LINE_TRACK) || defined(TEST_LIGHT_SENSOR) || defined(TEST_COLOUR_SENSORS) || defined(TEST_MOTORS)|| defined(TEST))
+  // Serial.print("start");
+  // turn(90);
+  // delay(10000);
   // if (preEvacState.currentmode == Modes::LINE){
   // #ifdef  PRINT_STATE
   // preEvacFSM.printState();
   // #endif
-  preEvacFSM.run();
+  Serial.println(analogRead(A13));
+  // preEvacFSM.run();
+  // Serial.println(millis() - initialTime);
   // }else if (preEvacState.currentmode == Modes::ZONE){
   //   switch (evacState.zLoopCount)
   //   {
@@ -125,12 +134,15 @@ void loop() {
   #endif
 
   #ifdef TEST_MOTORS
-    driver.differentialSteer(0.19, 0);
-    delay(5000);
-    driver.differentialSteer(0, 0);
-    driver.halt();
-    delay(5000);
-    driver.differentialSteer(0.19, 0);
+    driver.differentialSteer(0.13, 0);
+  #endif
+
+  #ifdef TEST_FRONT_TOF
+    Serial.println(tof.getDistance(ToF_FRONT));
+  #endif
+
+  #ifdef TEST_SIDE_TOF
+    Serial.println(tof.getDistance(ToF_SIDE));
   #endif
 
   #ifdef TEST

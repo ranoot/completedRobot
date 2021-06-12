@@ -2,6 +2,9 @@
 
 void RobotLightSensor::init() 
 {
+  for (int i = 0; i < 7; i++) {
+    pinMode(lightSensorPins[i], INPUT);
+  }
 	read(maximumReadings);
   read(minimumReadings);
   for (int i = 0; i < 5; i++) {

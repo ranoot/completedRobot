@@ -2,7 +2,8 @@
 #ifndef ROBOTLIBRARY_H
 #define ROBOTLIBRARY_H
 
-inline const double motorSpeed = 0.24; //0.22
+inline double motorSpeed = 0.24; //0.22
+inline unsigned long initialTime = 0;
 
 #define TCAADDR 0x70
 #define LDR_PIN A15
@@ -12,18 +13,22 @@ inline const double motorSpeed = 0.24; //0.22
 #define colourSensor_Right 0
 #define colourSensor_Middle 2
 
-#define KP 0.32 //0.0008 with speed 0.25
-#define KD 12
+inline double KP = 0.36; //0.0008 with speed 0.25
+inline double KD = 40;
  //0.05, 0.019
 #define CALIBRATION_MOTOR_SPEED 0.2
 #define ROTATION_SPEED 0.23//0.23
-#define IMU_BAUD_RATE 9600
+#define IMU_ROTATION_SPEED 0.17 // * Rotation speed when turning with IMU
+#define IMU_BAUD_RATE 9600 //! Makes no damn sense (baud rate of IMU at 19200)
 
-#define OBSTACLE_DISTANCE 100 // Distance to be mantained between object and robot
+#define INITIAL_OBJECT_DISTANCE 140 //* Distance to begin obstacle avoidance
+#define OBSTACLE_DISTANCE 100 //* Distance to be mantained between object and robot
+#define OBSTACLE_ROTATION_SPEED 0.18
+
 
 #define BLACK_THRESHOLD 0.5
-#define TURN_DURATION 600//900
-#define TURN_CONSTANT 0.87
+#define TURN_DURATION 800//900
+#define TURN_CONSTANT 0.9
 #define FORWARD_DURATION 650
 #define grabDelay 250 // checked
 #define DISTANCE_THRESHOLD 50
@@ -42,6 +47,8 @@ inline const double motorSpeed = 0.24; //0.22
 // #define TEST_LIGHT_SENSOR
 // #define TEST_LINE_TRACK
 // #define TEST_MOTORS
+// #define TEST_FRONT_TOF
+// #define TEST_SIDE_TOF
 // #define TEST
 
 // only choose one please
@@ -99,21 +106,22 @@ class Servos {
     void grab();
     void sort(BallType ball);// assume only used in ZONE
     void openDoor();
-    bool checkKit();
+    // bool checkKit();
     void clawUp();
     void clawDown();
     void grabB();
-  private:
-    void LDRcalibrate();
-    int LDR_THRESHOLD;
-    int LDR_MAX;
-    int LDR_MIN;
+  
 };
 
 class LDR {
   public: 
     void init();
-    bool checkKit;
+    bool checkKit();
+  private:
+    void LDRcalibrate();
+    int LDR_THRESHOLD;
+    int LDR_MAX;
+    int LDR_MIN;
 };
 
 class ToF {

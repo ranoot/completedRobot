@@ -1,28 +1,25 @@
 #include "RobotLibrary.h"
 
-Servo servo1, servo2, servo3, servo4;//left right big door
+Servo servo1, servo2, clawArm, door;//left right big door
 
 void Servos::init(){
   servo1.attach(3);
   servo2.attach(5);
-  servo3.attach(11);
-  servo4.attach(13);
+  clawArm.attach(11);
+  door.attach(13);
   servo1.write(100);//--to move inside(clock);50 to grab
   servo2.write(0);
-  servo3.write(170);
-  servo4.write(20);
-  for (int i = 0; i < 700; i++){
-    LDRcalibrate();
-  }
+  clawArm.write(170);
+  door.write(20);
 }
 
 void Servos::grab(){
-  servo3.write(0);
+  clawArm.write(0);
   delay(2000);
   servo2.write(50);
   servo1.write(50);
   delay(2000);
-  servo3.write(170);
+  clawArm.write(170);
   delay(1500);
   if (mode == Modes::PRE_EVACUATION)
   {
@@ -50,34 +47,15 @@ void Servos::sort(BallType ball){
 }
 
 void Servos::openDoor(){
-  servo4.write(0);
+  door.write(0);
   delay(5000);
-  servo4.write(40);
+  door.write(40);
   delay(5000);
-  servo4.write(20);
-}
-
-void Servos::LDRcalibrate(){
-  int brightness = analogRead(LDR_PIN);
-  if(LDR_MIN > brightness) LDR_MIN = brightness;
-  if(LDR_MAX < brightness) LDR_MAX = brightness;
-  LDR_THRESHOLD = (LDR_MIN + LDR_MAX)*0.5;
-  // Serial.println(LDR_THRESHOLD);
-}
-
-bool Servos::checkKit(){
-  int brightness = analogRead(LDR_PIN);
-  // Serial.println(brightness);
-  // Serial.println("was for servo");
-  if (brightness < LDR_THRESHOLD){
-    return true;
-  }else{
-    return false;
-  }
+  door.write(20);
 }
 
 void Servos::clawUp() {
-  servo3.write(170);
+  clawArm.write(170);
   delay(2000);
   servo2.write(0);
   servo1.write(100);
@@ -85,7 +63,7 @@ void Servos::clawUp() {
 }
 
 void Servos::clawDown() {
-  servo3.write(0);
+  clawArm.write(0);
   delay(2000);
   servo2.write(0);
   servo1.write(100);
@@ -95,7 +73,7 @@ void Servos::clawDown() {
 void Servos::grabB(){
   driver.differentialSteer(-0, 0);
   delay(50);
-  servo3.write(0);
+  clawArm.write(0);
   // driver.differentialSteer(-0.5, 0);
   // delay(50);
   driver.differentialSteer(0, 0);
@@ -103,6 +81,6 @@ void Servos::grabB(){
   servo2.write(50);
   servo1.write(50);
   delay(2000); 
-  servo3.write(170);
+  clawArm.write(170);
   delay(1500);
 }
