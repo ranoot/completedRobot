@@ -115,6 +115,7 @@ void PreEvacFSM::INITIAL_TURN()
   #ifdef PRINT_STATE 
     Serial.println("5"); 
   #endif
+  driver.halt();
   driver.differentialSteer(ROTATION_SPEED, turnDirection*TURN_CONSTANT);
   wait(TURN_DURATION, &PreEvacFSM::READ_BLACK_LINE);
   

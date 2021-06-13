@@ -24,6 +24,9 @@ inline double KD = 40;
 #define INITIAL_OBJECT_DISTANCE 140 //* Distance to begin obstacle avoidance
 #define OBSTACLE_DISTANCE 100 //* Distance to be mantained between object and robot
 #define OBSTACLE_ROTATION_SPEED 0.18
+#define OBSTACLE_AVOIDANCE_TURN_ANGLE 90
+#define OBSTACLE_FORWARD_SPEED 0.19
+#define OBSTACLE_FORWARD_DURATION 400
 
 
 #define BLACK_THRESHOLD 0.5
