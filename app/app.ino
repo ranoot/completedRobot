@@ -18,7 +18,7 @@ void setup()
   gyro.init();
   driver.init();
   colourSensor.init();
-	// lightSensor.init();
+	lightSensor.init();
   servo.init();
   delay(2000);
   Serial.println("Calibrate LDR!");
@@ -45,26 +45,40 @@ void setup()
   #if defined(TEST)
   //random code
   #endif
-  pinMode(A13, INPUT);
+  // pinMode(A13, INPUT);
   Serial.println("end setting");
   initialTime = millis();
+
+  // while (!gyro.dataReady());
+  // preEvacFSM.finalAngle = (int)(gyro.read()+OBSTACLE_AVOIDANCE_TURN_ANGLE)%360;
 }
 
 void loop() {
   // //gyro.gyroFSM();
   lightSensor.updateReading();
+  // for (int i = 0; i < 7; i++) {
+  //   Serial.print(lightSensor.currentReading()[i]);
+  //   Serial.print(" ");
+  // }
+  // Serial.println();
+  
   // if (gyro.dataReady()) Serial.println(gyro.read());
   // if (IMU_SERIAL.available()) Serial.println(IMU_SERIAL.read());
   #if !(defined(TEST_LINE_TRACK) || defined(TEST_LIGHT_SENSOR) || defined(TEST_COLOUR_SENSORS) || defined(TEST_MOTORS)|| defined(TEST))
-  // Serial.print("start");
-  // turn(90);
-  // delay(10000);
-  // if (preEvacState.currentmode == Modes::LINE){
-  // #ifdef  PRINT_STATE
-  // preEvacFSM.printState();
-  // #endif
-  Serial.println(analogRead(A13));
-  // preEvacFSM.run();
+  // //  if (gyro.dataReady()) {
+  // //   int reading = gyro.read();
+  // //   int difference = (int)(preEvacFSM.finalAngle-reading)%360;
+  // //   Serial.println(difference);
+  // //   driver.differentialSteer(IMU_ROTATION_SPEED, 0.5);
+  // //   if (abs(difference) <= 5) {
+  // //     driver.halt();
+  // //     while(1);
+  // //   }
+  // // }
+
+  // Serial.println(analogRead(A13));
+  // colourSensor.print(1, colourSensor_Right);
+  preEvacFSM.run();
   // Serial.println(millis() - initialTime);
   // }else if (preEvacState.currentmode == Modes::ZONE){
   //   switch (evacState.zLoopCount)

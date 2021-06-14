@@ -11,6 +11,7 @@ inline class PreEvacFSM {
     //// void INITIAL_FORWARD();
     void PICKUP(); // 6
     void WAIT(); // 7
+    void CHECK_RED();
 
     unsigned long initialTime;
     int duration;

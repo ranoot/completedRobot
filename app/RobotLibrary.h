@@ -2,7 +2,7 @@
 #ifndef ROBOTLIBRARY_H
 #define ROBOTLIBRARY_H
 
-inline double motorSpeed = 0.24; //0.22
+inline double motorSpeed = 0.25; //0.22
 inline unsigned long initialTime = 0;
 
 #define TCAADDR 0x70
@@ -14,19 +14,19 @@ inline unsigned long initialTime = 0;
 #define colourSensor_Middle 2
 
 inline double KP = 0.36; //0.0008 with speed 0.25
-inline double KD = 40;
+inline double KD = 12;
  //0.05, 0.019
 #define CALIBRATION_MOTOR_SPEED 0.2
 #define ROTATION_SPEED 0.23//0.23
-#define IMU_ROTATION_SPEED 0.17 // * Rotation speed when turning with IMU
+#define IMU_ROTATION_SPEED 0.25 // * Rotation speed when turning with IMU
 #define IMU_BAUD_RATE 9600 //! Makes no damn sense (baud rate of IMU at 19200)
 
-#define INITIAL_OBJECT_DISTANCE 140 //* Distance to begin obstacle avoidance
+#define INITIAL_OBJECT_DISTANCE 125 //* Distance to begin obstacle avoidance
 #define OBSTACLE_DISTANCE 100 //* Distance to be mantained between object and robot
-#define OBSTACLE_ROTATION_SPEED 0.18
-#define OBSTACLE_AVOIDANCE_TURN_ANGLE 90
-#define OBSTACLE_FORWARD_SPEED 0.19
-#define OBSTACLE_FORWARD_DURATION 400
+#define OBSTACLE_ROTATION_SPEED 0.17
+#define OBSTACLE_AVOIDANCE_TURN_ANGLE 35
+#define OBSTACLE_FORWARD_SPEED 0.17
+#define OBSTACLE_FORWARD_DURATION 1200
 
 
 #define BLACK_THRESHOLD 0.5
@@ -44,7 +44,7 @@ inline double KD = 40;
 #define REVERSE_DURATION 500
 
 // ~ testing switches ~
-//  #define PRINT_STATE
+ #define PRINT_STATE
 // #define PRINT_TURN
 // #define TEST_COLOUR_SENSORS
 // #define TEST_LIGHT_SENSOR

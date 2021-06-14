@@ -33,20 +33,22 @@ void PreEvacFSM::LINE_TRACK()
     // Serial.println(tof.getDistance(ToF_FRONT));
   #endif
   PID(lightSensor.currentReading());
-  // int tofReading = tof.getDistance(ToF_FRONT);
+  int tofReading = tof.getDistance(ToF_FRONT);
   // Serial.println(tofReading);
   if (lightSensor.isAllBlack()) {
     currentState = &PreEvacFSM::READ_COLOUR_SENSORS;
+  } else if (lightSensor.isAllWhite()) {
+    currentState = &PreEvacFSM::CHECK_RED;
   // } else if (ldr.checkKit()) {
   //   Serial.println("p");
   //   currentState = &PreEvacFSM::PICKUP;
-  // } else if (tofReading != -1){
-  //   if (tofReading < INITIAL_OBJECT_DISTANCE) {
-  //     Serial.println("t");
-  //     currentState = &PreEvacFSM::ORIENTATE;
-  //     driver.halt();
-  //     driver.differentialSteer(ROTATION_SPEED, -1);
-  //   }
+  } else if (tofReading != -1){
+    if (tofReading < INITIAL_OBJECT_DISTANCE) {
+      Serial.println("t");
+      currentState = &PreEvacFSM::ORIENTATE;
+      driver.halt();
+      driver.differentialSteer(OBSTACLE_ROTATION_SPEED, -1);
+  }
   }
 }
 
@@ -174,6 +176,23 @@ void PreEvacFSM::PICKUP()
     driver.halt();
     servo.grab();
     currentState = &PreEvacFSM::LINE_TRACK;
+}
+
+void PreEvacFSM::CHECK_RED()
+{
+  driver.halt();
+  for (int i = 0; i < 4; i++) {
+    if (
+      colourSensor.isColour(Red, colourSensor_Right) ||
+      colourSensor.isColour(Red, colourSensor_Left)
+    ) {
+      while(1);
+    } else {
+      break;
+    }
+  }
+  driver.differentialSteer(motorSpeed, 0);
+  wait(200, &PreEvacFSM::LINE_TRACK);
 }
 
 // void PreEvacFSM::printState()

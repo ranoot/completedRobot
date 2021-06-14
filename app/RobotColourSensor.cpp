@@ -155,7 +155,7 @@ void RobotColourSensor::print(const int option, const uint8_t chosenSensor)
         HSB c = RGBtoHSB(r, g, b);
         Serial.print("H:"); Serial.print(c.hue); 
         Serial.print(", S:"); Serial.print(c.saturation);
-        Serial.print(", B:"); Serial.print(c.brightness); Serial.print("; ");
+        Serial.print(", B:"); Serial.print(c.brightness); Serial.println("; ");
       }
       break;
   }
