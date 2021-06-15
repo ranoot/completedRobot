@@ -7,7 +7,7 @@ void RobotLightSensor::init()
   }
 	read(maximumReadings);
   read(minimumReadings);
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 6; i++) {
     driver.differentialSteer((i%2 ? 1 : -1) * CALIBRATION_MOTOR_SPEED, 0);
     for(int i = 0; i < 700; i++) {
       calibrate();

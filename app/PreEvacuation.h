@@ -22,8 +22,10 @@ inline class PreEvacFSM {
     void ORIENTATE();
     void FORWARD();
     void CLOCKWISE_TURN();
+    void ANTI_CLOCKWISE_TURN();
 
-    int finalAngle = 0;
+    int angleTurned = 0;
+    int previousAngle = 0;
 
     void (PreEvacFSM::*nextState)(void);
 

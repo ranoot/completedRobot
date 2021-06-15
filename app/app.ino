@@ -3,6 +3,8 @@
 //TODO: pause loop with button
 //TODO: Pickup 
 
+// volatile bool stop = false;
+unsigned long initialTime = 0;
 RobotDriver driver;
 RobotColourSensor colourSensor;
 RobotLightSensor lightSensor;
@@ -12,8 +14,14 @@ Servos servo;
 ToF tof;
 LDR ldr;
 
+// void blink() 
+// {
+//   stop = !stop;
+// }
+
 void setup()
 {
+  delay(3000);
   Serial.begin(9600);
   gyro.init();
   driver.init();
@@ -24,6 +32,9 @@ void setup()
   Serial.println("Calibrate LDR!");
   ldr.init();
   tof.initial();
+
+  // pinMode(51, INPUT_PULLUP);
+  // attachInterrupt(digitalPinToInterrupt(51), blink, FALLING);
   
   #if defined(TEST_RIGHT_ANGLE_TURN)
     preEvacState.currentState = PreEvacStates::INITIAL_TURN;
@@ -48,7 +59,8 @@ void setup()
   // pinMode(A13, INPUT);
   Serial.println("end setting");
   initialTime = millis();
-
+  // initialTime = millis();
+  // preEvacFSM.currentState = &PreEvacFSM::CLOCKWISE_TURN;/
   // while (!gyro.dataReady());
   // preEvacFSM.finalAngle = (int)(gyro.read()+OBSTACLE_AVOIDANCE_TURN_ANGLE)%360;
 }
@@ -56,12 +68,21 @@ void setup()
 void loop() {
   // //gyro.gyroFSM();
   lightSensor.updateReading();
+  if ((millis() - initialTime) > 9500 && (millis() - initialTime) < 13500) {
+    KP = 0.36; //0.0008 with speed 0.25
+    KD = 0;
+    motorSpeed = 0.28;
+  } else {
+    KP = 0.36; //0.0008 with speed 0.25
+    KD = 6;
+    motorSpeed = 0.25;
+  }
   // for (int i = 0; i < 7; i++) {
   //   Serial.print(lightSensor.currentReading()[i]);
   //   Serial.print(" ");
   // }
   // Serial.println();
-  
+  // while (stop);
   // if (gyro.dataReady()) Serial.println(gyro.read());
   // if (IMU_SERIAL.available()) Serial.println(IMU_SERIAL.read());
   #if !(defined(TEST_LINE_TRACK) || defined(TEST_LIGHT_SENSOR) || defined(TEST_COLOUR_SENSORS) || defined(TEST_MOTORS)|| defined(TEST))
@@ -75,10 +96,14 @@ void loop() {
   // //     while(1);
   // //   }
   // // }
+  // // Serial.println("start");
+  // // turn(90);
+  // // delay(6000);
 
   // Serial.println(analogRead(A13));
   // colourSensor.print(1, colourSensor_Right);
   preEvacFSM.run();
+  // Serial.println(tof.getDistance(ToF_FRONT));
   // Serial.println(millis() - initialTime);
   // }else if (preEvacState.currentmode == Modes::ZONE){
   //   switch (evacState.zLoopCount)

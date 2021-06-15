@@ -13,7 +13,7 @@ void turnTo(double angle)
    if (gyro.dataReady()) {
     reading = gyro.read();
     // Serial.println(reading);
-    difference = (int)(angle-reading)%360;
+    difference = (int)(angle+360-reading)%360;
     Serial.println(difference);
     if (difference>180){
       driver.differentialSteer(IMU_ROTATION_SPEED, -0.5);
